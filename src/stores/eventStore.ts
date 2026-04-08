@@ -13,9 +13,17 @@ import {
   where,
   Timestamp,
 } from 'firebase/firestore'
-import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
-import { db, storage } from '../firebase'
+import { db } from '../firebase'
 import type { Event } from '../types'
+
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
 
 export const useEventStore = defineStore('events', () => {
   const events = ref<Event[]>([])
@@ -61,9 +69,7 @@ export const useEventStore = defineStore('events', () => {
   async function createEvent(event: Omit<Event, 'id' | 'createdAt'>, flyerFile?: File): Promise<string> {
     let flyerURL = ''
     if (flyerFile) {
-      const fileRef = storageRef(storage, `flyers/${Date.now()}_${flyerFile.name}`)
-      await uploadBytes(fileRef, flyerFile)
-      flyerURL = await getDownloadURL(fileRef)
+      flyerURL = await fileToBase64(flyerFile)
     }
     const docRef = await addDoc(collection(db, 'events'), {
       ...event,
@@ -78,9 +84,7 @@ export const useEventStore = defineStore('events', () => {
   async function updateEvent(id: string, updates: Partial<Event>, flyerFile?: File) {
     const data: any = { ...updates }
     if (flyerFile) {
-      const fileRef = storageRef(storage, `flyers/${Date.now()}_${flyerFile.name}`)
-      await uploadBytes(fileRef, flyerFile)
-      data.flyerURL = await getDownloadURL(fileRef)
+      data.flyerURL = await fileToBase64(flyerFile)
     }
     if (data.dateTime) {
       data.dateTime = Timestamp.fromDate(new Date(data.dateTime))
