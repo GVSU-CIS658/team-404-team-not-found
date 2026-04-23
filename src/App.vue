@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from './stores/authStore'
 
@@ -7,8 +7,31 @@ const authStore = useAuthStore()
 const router = useRouter()
 const mobileOpen = ref(false)
 
+// Theme
+const isDark = ref<boolean>(false)
+
+function applyTheme(dark: boolean) {
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light')
+  document.documentElement.classList.add('theme-transitioning')
+  setTimeout(() => document.documentElement.classList.remove('theme-transitioning'), 400)
+  localStorage.setItem('schedulr-theme', dark ? 'dark' : 'light')
+}
+
+function toggleTheme() {
+  isDark.value = !isDark.value
+}
+
+watch(isDark, (v) => applyTheme(v))
+
 onMounted(() => {
   authStore.init()
+  const saved = localStorage.getItem('schedulr-theme')
+  if (saved) {
+    isDark.value = saved === 'dark'
+  } else {
+    isDark.value = window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false
+  }
+  applyTheme(isDark.value)
 })
 
 async function handleLogout() {
@@ -46,6 +69,19 @@ function initials(name: string) {
         </div>
 
         <div class="nav-right">
+          <!-- Theme Toggle -->
+          <button
+            class="theme-toggle"
+            @click="toggleTheme"
+            :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+            :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+          >
+            <span class="theme-toggle-icon" :class="{ dark: isDark }">
+              <span class="theme-icon sun">☀️</span>
+              <span class="theme-icon moon">🌙</span>
+            </span>
+          </button>
+
           <template v-if="authStore.isAuthenticated">
             <div class="user-chip">
               <div class="user-avatar">{{ initials(authStore.user?.name || 'U') }}</div>
@@ -110,3 +146,57 @@ function initials(name: string) {
     </footer>
   </div>
 </template>
+
+<style scoped>
+/* Theme Toggle Button */
+.theme-toggle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+  padding: 0;
+}
+.theme-toggle:hover {
+  border-color: var(--primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(8,145,178,0.15);
+}
+.theme-toggle-icon {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.theme-toggle-icon.dark {
+  transform: rotate(180deg);
+}
+.theme-icon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: opacity 0.3s ease;
+}
+.theme-icon.sun { opacity: 1; }
+.theme-icon.moon { opacity: 0; transform: rotate(-180deg); }
+.theme-toggle-icon.dark .theme-icon.sun { opacity: 0; }
+.theme-toggle-icon.dark .theme-icon.moon { opacity: 1; }
+
+@media (max-width: 768px) {
+  .theme-toggle { width: 36px; height: 36px; }
+}
+</style>

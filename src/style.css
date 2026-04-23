@@ -6,40 +6,40 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;800&display=swap');
 
 /* ─── Design Tokens ─────────────────────────────────────── */
-:root {
-  --primary:        #4f46e5;
-  --primary-dark:   #3730a3;
-  --primary-light:  #818cf8;
+:root, [data-theme="light"] {
+  --primary:        #0891b2;
+  --primary-dark:   #0e7490;
+  --primary-light:  #22d3ee;
   --accent:         #f59e0b;
   --accent-dark:    #d97706;
   --success:        #10b981;
   --danger:         #ef4444;
   --warning:        #f59e0b;
-  --info:           #06b6d4;
+  --info:           #0284c7;
 
-  --bg:             #f8fafc;
+  --bg:             #f0f4f8;
   --surface:        #ffffff;
-  --surface-2:      #f1f5f9;
-  --surface-3:      #e2e8f0;
-  --border:         rgba(226, 232, 240, 0.8);
+  --surface-2:      #eef2f6;
+  --surface-3:      #dde5ee;
+  --border:         rgba(203, 213, 225, 0.7);
 
-  --text:           #0f172a;
+  --text:           #0a1628;
   --text-muted:     #475569;
   --text-light:     #94a3b8;
 
-  --grad-hero:      linear-gradient(135deg, #1e1b4b 0%, #312e81 30%, #4c1d95 60%, #5b21b6 100%);
-  --grad-primary:   linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  --grad-hero:      linear-gradient(160deg, #050d1e 0%, #0a1628 35%, #0c1f3a 65%, #06101e 100%);
+  --grad-primary:   linear-gradient(135deg, #0891b2 0%, #22d3ee 100%);
   --grad-accent:    linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
-  --grad-cool:      linear-gradient(135deg, #06b6d4 0%, #4f46e5 100%);
-  --grad-warm:      linear-gradient(135deg, #f97316 0%, #ec4899 100%);
+  --grad-cool:      linear-gradient(135deg, #06b6d4 0%, #0284c7 100%);
+  --grad-warm:      linear-gradient(135deg, #f97316 0%, #f59e0b 100%);
   --grad-green:     linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
 
   --shadow-sm:  0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
   --shadow-md:  0 4px 20px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
   --shadow-lg:  0 20px 48px rgba(0,0,0,0.10), 0 8px 20px rgba(0,0,0,0.06);
   --shadow-xl:  0 40px 80px rgba(0,0,0,0.12), 0 16px 40px rgba(0,0,0,0.08);
-  --shadow-glow: 0 0 48px rgba(79, 70, 229, 0.35);
-  --shadow-card: 0 4px 24px rgba(79, 70, 229, 0.07), 0 1px 4px rgba(0,0,0,0.04);
+  --shadow-glow: 0 0 48px rgba(8, 145, 178, 0.35);
+  --shadow-card: 0 4px 24px rgba(8, 145, 178, 0.08), 0 1px 4px rgba(0,0,0,0.04);
 
   --radius-xs:  6px;
   --radius-sm:  10px;
@@ -110,11 +110,63 @@
 html { scroll-behavior: smooth; }
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: var(--bg);
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 0%, rgba(8,145,178,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 85% 100%, rgba(245,158,11,0.06) 0%, transparent 55%),
+    var(--bg);
+  background-attachment: fixed;
   color: var(--text);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+/* ─── Dark Theme ─────────────────────────────────────────── */
+[data-theme="dark"] {
+  --bg:             #060c18;
+  --surface:        #0d1628;
+  --surface-2:      #111c32;
+  --surface-3:      #1a2640;
+  --border:         rgba(51, 65, 85, 0.5);
+  --text:           #e2eaf2;
+  --text-muted:     #94a3b8;
+  --text-light:     #64748b;
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.4), 0 1px 4px rgba(0,0,0,0.3);
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+  --shadow-md:  0 4px 20px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.25);
+  --shadow-lg:  0 20px 48px rgba(0,0,0,0.45), 0 8px 20px rgba(0,0,0,0.3);
+}
+[data-theme="dark"] body {
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 0%, rgba(8,145,178,0.12) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 85% 100%, rgba(245,158,11,0.08) 0%, transparent 55%),
+    var(--bg);
+}
+[data-theme="dark"] .navbar {
+  background: rgba(13,22,40,0.82) !important;
+  border-bottom-color: rgba(51,65,85,0.5) !important;
+}
+[data-theme="dark"] .section-white { background: var(--surface) !important; }
+[data-theme="dark"] .section-bg    { background: var(--bg) !important; }
+[data-theme="dark"] .cat-card,
+[data-theme="dark"] .feat-card,
+[data-theme="dark"] .skel-card,
+[data-theme="dark"] .event-card {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+}
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  background: var(--surface-2) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
 }
 img { max-width: 100%; display: block; }
 a { color: var(--primary); text-decoration: none; }

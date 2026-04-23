@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import {
   collection, doc, getDocs, getDoc, addDoc, updateDoc, deleteDoc,
-  query, orderBy, where, Timestamp,
+  query, orderBy, where, Timestamp, limit,
 } from 'firebase/firestore'
 import { db } from '../firebase'
 import type { Event, Venue } from '../types'
@@ -67,13 +67,38 @@ export const useEventStore = defineStore('events', () => {
   async function fetchEvents() {
     loading.value = true
     try {
-      const q = query(collection(db, 'events'), orderBy('dateTime', 'asc'))
+      // Performance: limit to 60 most-recent events, only future ones
+      const nowTs = Timestamp.fromDate(new Date(Date.now() - 24 * 60 * 60 * 1000)) // include today
+      const q = query(
+        collection(db, 'events'),
+        where('dateTime', '>=', nowTs),
+        orderBy('dateTime', 'asc'),
+        limit(60)
+      )
       const snapshot = await getDocs(q)
       events.value = snapshot.docs.map(d => docToEvent(d.id, d.data()))
     } catch (e: any) {
       error.value = e.message
     } finally {
       loading.value = false
+    }
+  }
+
+  // Lighter query for home page — next 6 upcoming
+  const upcomingEvents = ref<Event[]>([])
+  async function fetchUpcomingEvents(n = 6) {
+    try {
+      const nowTs = Timestamp.fromDate(new Date(Date.now() - 12 * 60 * 60 * 1000))
+      const q = query(
+        collection(db, 'events'),
+        where('dateTime', '>=', nowTs),
+        orderBy('dateTime', 'asc'),
+        limit(n)
+      )
+      const snapshot = await getDocs(q)
+      upcomingEvents.value = snapshot.docs.map(d => docToEvent(d.id, d.data()))
+    } catch (e: any) {
+      error.value = e.message
     }
   }
 
@@ -143,5 +168,5 @@ export const useEventStore = defineStore('events', () => {
     }
   }
 
-  return { events, loading, error, fetchEvents, fetchEvent, createEvent, updateEvent, deleteEvent, fetchMyEvents }
+  return { events, upcomingEvents, loading, error, fetchEvents, fetchUpcomingEvents, fetchEvent, createEvent, updateEvent, deleteEvent, fetchMyEvents }
 })

@@ -21,45 +21,33 @@ const categories = [
   { label: 'General',      emoji: '📌' },
 ]
 
-// Category-themed background images (Unsplash, optimised size)
-const CAT_BG: Record<string, string> = {
-  'All':          'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=60',  // scenic Michigan
-  'Music':        'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=1200&q=60',  // concert crowd
-  'Food & Drink': 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1200&q=60',  // food spread
-  'Arts':         'https://images.unsplash.com/photo-1554907984-15263bfd63bd?w=1200&q=60',     // art gallery
-  'Sports':       'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=1200&q=60',  // stadium
-  'Community':    'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1200&q=60',  // community hands
-  'Education':    'https://images.unsplash.com/photo-1532012197267-da84d127e765?w=1200&q=60',  // library
-  'General':      'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1200&q=60',  // GR downtown
-}
-
-const CAT_ACCENT: Record<string, string> = {
-  'All':          '#4f46e5',
-  'Music':        '#7c3aed',
-  'Food & Drink': '#d97706',
-  'Arts':         '#be185d',
-  'Sports':       '#047857',
-  'Community':    '#0e7490',
-  'Education':    '#4f46e5',
-  'General':      '#475569',
+// Professional CSS gradients — one consistent pattern style, different colors per category
+// All use the same multi-stop diagonal gradient template for visual unity
+const CAT_GRAD: Record<string, string> = {
+  'All':          'linear-gradient(135deg, #050d1e 0%, #0a1628 40%, #0c1f3a 70%, #050d1e 100%)',
+  'Music':        'linear-gradient(135deg, #1e1066 0%, #3b1077 40%, #581c87 70%, #0f0730 100%)',
+  'Food & Drink': 'linear-gradient(135deg, #431407 0%, #7c2d12 40%, #9a3412 70%, #240a04 100%)',
+  'Arts':         'linear-gradient(135deg, #3f0717 0%, #881337 40%, #be185d 70%, #1f0510 100%)',
+  'Sports':       'linear-gradient(135deg, #052e16 0%, #065f46 40%, #047857 70%, #021a0c 100%)',
+  'Community':    'linear-gradient(135deg, #082f49 0%, #0c4a6e 40%, #0369a1 70%, #031725 100%)',
+  'Education':    'linear-gradient(135deg, #1a1366 0%, #1e40af 40%, #2563eb 70%, #0a0828 100%)',
+  'General':      'linear-gradient(135deg, #111827 0%, #1f2937 40%, #374151 70%, #06090f 100%)',
 }
 
 const CAT_HEADLINE: Record<string, string> = {
-  'All':          'All Events in Grand Rapids',
-  'Music':        '🎵 Music & Concerts',
-  'Food & Drink': '🍺 Food & Drink Experiences',
-  'Arts':         '🎨 Arts & Culture',
-  'Sports':       '⚽ Sports & Recreation',
-  'Community':    '🤝 Community & Social',
-  'Education':    '📚 Education & Learning',
-  'General':      '📌 General Events',
+  'All':          'Browse All Events',
+  'Music':        'Music & Concerts',
+  'Food & Drink': 'Food & Drink Experiences',
+  'Arts':         'Arts & Culture',
+  'Sports':       'Sports & Recreation',
+  'Community':    'Community & Social',
+  'Education':    'Education & Learning',
+  'General':      'General Events',
 }
 
-const heroBg = computed(() => CAT_BG[selectedCategory.value] || CAT_BG['All'])
-const heroAccent = computed(() => CAT_ACCENT[selectedCategory.value] || '#4f46e5')
+const heroGrad = computed(() => CAT_GRAD[selectedCategory.value] || CAT_GRAD['All'])
 const heroHeadline = computed(() => CAT_HEADLINE[selectedCategory.value] || 'Browse Events')
 
-// Watch route query changes
 watch(() => route.query, (q) => {
   if (q.search) searchQuery.value = q.search as string
   if (q.cat)    selectedCategory.value = q.cat as string
@@ -91,17 +79,22 @@ function clearFilters() {
 </script>
 
 <template>
-  <!-- ── Category-Themed Hero ── -->
-  <div class="page-hero themed-hero" :key="selectedCategory">
-    <div class="themed-hero-bg">
-      <img :src="heroBg" alt="" loading="lazy" />
-    </div>
-    <div class="themed-hero-overlay" :style="{ '--accent': heroAccent }"></div>
+  <!-- ── Themed Hero (CSS gradient, no photos) ── -->
+  <div class="page-hero themed-hero" :style="{ background: heroGrad }" :key="selectedCategory">
+    <!-- Geometric pattern overlay — consistent across categories -->
+    <div class="themed-hero-pattern"></div>
+    <!-- Soft glow blobs -->
+    <div class="hero-glow hero-glow-1"></div>
+    <div class="hero-glow hero-glow-2"></div>
+
     <div class="container themed-hero-content">
+      <div class="themed-hero-badge">
+        <span class="hero-badge-dot"></span>
+        {{ filteredEvents.length }} upcoming {{ filteredEvents.length === 1 ? 'event' : 'events' }}
+      </div>
       <div class="themed-hero-title">{{ heroHeadline }}</div>
       <div class="themed-hero-sub">Discover what's happening in Grand Rapids, Michigan</div>
 
-      <!-- Search bar inside hero -->
       <div class="hero-search-bar">
         <span class="hero-search-icon">🔍</span>
         <input
@@ -115,7 +108,7 @@ function clearFilters() {
     </div>
   </div>
 
-  <div style="padding: 36px 0 72px; background: var(--bg);">
+  <div style="padding: 36px 0 72px;">
     <div class="container">
 
       <!-- Category pills -->
@@ -131,7 +124,7 @@ function clearFilters() {
         </button>
       </div>
 
-      <!-- Result count -->
+      <!-- Result bar -->
       <div class="ev-result-bar" v-if="!eventStore.loading">
         <span><strong>{{ filteredEvents.length }}</strong> event{{ filteredEvents.length !== 1 ? 's' : '' }}
           <span v-if="selectedCategory !== 'All'"> in <em>{{ selectedCategory }}</em></span>
@@ -144,7 +137,7 @@ function clearFilters() {
 
       <!-- Loading skeletons -->
       <div v-if="eventStore.loading" class="events-grid">
-        <div v-for="n in 6" :key="n" style="background:white; border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden;">
+        <div v-for="n in 6" :key="n" style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden;">
           <div class="skeleton" style="height:196px;"></div>
           <div style="padding:16px;">
             <div class="skeleton" style="height:18px; margin-bottom:10px; border-radius:4px;"></div>
@@ -182,57 +175,95 @@ function clearFilters() {
   display: flex;
   align-items: flex-end;
   overflow: hidden;
-  transition: background 0.5s ease;
-}
-.themed-hero-bg {
-  position: absolute;
-  inset: 0;
-  transition: opacity 0.5s ease;
-}
-.themed-hero-bg img {
-  width: 100%; height: 100%;
-  object-fit: cover;
-  filter: brightness(0.35) saturate(1.3);
-  animation: heroFadeIn 0.6s ease both;
-}
-@keyframes heroFadeIn {
-  from { opacity: 0; transform: scale(1.04); }
-  to   { opacity: 1; transform: scale(1); }
+  transition: background 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.themed-hero-overlay {
+/* Subtle geometric SVG overlay — same for every category, creates visual consistency */
+.themed-hero-pattern {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(15,23,42,0.72) 0%,
-    color-mix(in srgb, var(--accent, #4f46e5) 45%, transparent) 100%
-  );
+  background-image:
+    url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.04'%3E%3Ccircle cx='40' cy='40' r='38'/%3E%3Ccircle cx='40' cy='40' r='26'/%3E%3Ccircle cx='40' cy='40' r='14'/%3E%3C/g%3E%3C/svg%3E"),
+    linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.25) 100%);
+  opacity: 0.8;
+}
+
+/* Soft glow spots for depth */
+.hero-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.5;
+  pointer-events: none;
+}
+.hero-glow-1 {
+  width: 400px; height: 400px;
+  background: rgba(34,211,238,0.18);
+  top: -100px; right: -80px;
+}
+.hero-glow-2 {
+  width: 320px; height: 320px;
+  background: rgba(245,158,11,0.12);
+  bottom: -80px; left: 10%;
 }
 
 .themed-hero-content {
   position: relative;
   z-index: 1;
   padding-bottom: 40px;
-  padding-top: 48px;
+  padding-top: 56px;
+  animation: heroContentFade 0.5s ease both;
 }
+@keyframes heroContentFade {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.themed-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.92);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 14px;
+  border-radius: 999px;
+  margin-bottom: 14px;
+  letter-spacing: 0.2px;
+}
+.hero-badge-dot {
+  width: 7px; height: 7px;
+  background: #22d3ee;
+  border-radius: 50%;
+  box-shadow: 0 0 12px #22d3ee;
+  animation: dotPulse 2s ease-in-out infinite;
+}
+@keyframes dotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.55; transform: scale(1.3); }
+}
+
 .themed-hero-title {
-  font-size: clamp(24px, 4vw, 42px);
+  font-size: clamp(28px, 4.5vw, 48px);
   font-weight: 900;
   color: white;
-  letter-spacing: -1px;
-  line-height: 1.1;
-  margin-bottom: 8px;
-  text-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  letter-spacing: -1.5px;
+  line-height: 1.05;
+  margin-bottom: 10px;
+  text-shadow: 0 2px 24px rgba(0,0,0,0.35);
 }
 .themed-hero-sub {
   font-size: 15px;
-  color: rgba(255,255,255,0.72);
+  color: rgba(255,255,255,0.75);
   font-weight: 400;
-  margin-bottom: 24px;
+  margin-bottom: 26px;
 }
 
-/* ── Hero search bar ── */
+/* Hero search */
 .hero-search-bar {
   position: relative;
   display: flex;
@@ -249,58 +280,72 @@ function clearFilters() {
 .hero-search-input {
   width: 100%;
   padding: 14px 44px 14px 48px;
-  border: none;
+  border: 1px solid rgba(255,255,255,0.2);
   border-radius: var(--radius-lg);
   font-size: 15px;
-  background: rgba(255,255,255,0.95);
-  backdrop-filter: blur(12px);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: white;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
   outline: none;
-  transition: var(--transition);
+  transition: all 0.25s ease;
 }
+.hero-search-input::placeholder { color: rgba(255,255,255,0.6); }
 .hero-search-input:focus {
-  background: white;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+  background: rgba(255,255,255,0.18);
+  border-color: rgba(34,211,238,0.5);
+  box-shadow: 0 0 0 3px rgba(34,211,238,0.15), 0 8px 32px rgba(0,0,0,0.2);
 }
 .hero-clear-btn {
   position: absolute;
   right: 14px;
-  background: var(--surface-2);
+  background: rgba(255,255,255,0.18);
   border: none; border-radius: 50%;
-  width: 22px; height: 22px;
+  width: 24px; height: 24px;
   font-size: 11px; cursor: pointer;
-  color: var(--text-muted);
+  color: white;
   display: flex; align-items: center; justify-content: center;
-  transition: var(--transition);
+  transition: background 0.2s ease;
 }
-.hero-clear-btn:hover { background: var(--surface-3); color: var(--text); }
+.hero-clear-btn:hover { background: rgba(255,255,255,0.3); }
 
-/* ── Category pills ── */
+/* Category pills */
 .cat-pills {
   display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;
 }
 .cat-pill {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 8px 18px; background: white;
-  border: 1.5px solid var(--border); border-radius: var(--radius-full);
-  font-size: 13px; font-weight: 500; color: var(--text-muted);
-  cursor: pointer; transition: var(--transition); white-space: nowrap;
+  padding: 8px 18px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-full);
+  font-size: 13px; font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  white-space: nowrap;
 }
 .cat-pill:hover {
-  border-color: var(--primary-light); color: var(--primary); background: rgba(79,70,229,0.04);
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(8,145,178,0.05);
+  transform: translateY(-1px);
 }
 .cat-pill.active {
-  background: var(--primary); border-color: var(--primary);
-  color: white; box-shadow: 0 4px 12px rgba(79,70,229,0.3);
+  background: var(--grad-primary);
+  border-color: transparent;
+  color: white;
+  box-shadow: 0 4px 14px rgba(8,145,178,0.35);
 }
 
-/* ── Result bar ── */
+/* Result bar */
 .ev-result-bar {
   display: flex; align-items: center; justify-content: space-between;
   margin-bottom: 24px; font-size: 14px; color: var(--text-muted); flex-wrap: wrap; gap: 8px;
 }
 .ev-result-bar strong { color: var(--text); }
-.ev-result-bar em { font-style: normal; color: var(--primary); }
+.ev-result-bar em { font-style: normal; color: var(--primary); font-weight: 600; }
 .clear-link {
   background: none; border: none; cursor: pointer;
   font-size: 13px; color: var(--primary); font-weight: 600; padding: 0;
