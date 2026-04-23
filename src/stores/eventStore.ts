@@ -1,20 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import {
-  collection,
-  doc,
-  getDocs,
-  getDoc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  query,
-  orderBy,
-  where,
-  Timestamp,
+  collection, doc, getDocs, getDoc, addDoc, updateDoc, deleteDoc,
+  query, orderBy, where, Timestamp,
 } from 'firebase/firestore'
 import { db } from '../firebase'
-import type { Event } from '../types'
+import type { Event, Venue } from '../types'
 
 function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -25,12 +16,37 @@ function fileToBase64(file: File): Promise<string> {
   })
 }
 
+function venueFromFirestore(v: any): Venue {
+  return {
+    id: v.id,
+    name: v.name,
+    address: v.address,
+    dateTime: v.dateTime?.toDate?.() || new Date(v.dateTime),
+    ticketLimit: v.ticketLimit,
+    ticketsRemaining: v.ticketsRemaining,
+  }
+}
+
+function venueToFirestore(v: Venue) {
+  return {
+    id: v.id,
+    name: v.name,
+    address: v.address,
+    dateTime: Timestamp.fromDate(new Date(v.dateTime)),
+    ticketLimit: v.ticketLimit,
+    ticketsRemaining: v.ticketsRemaining,
+  }
+}
+
 export const useEventStore = defineStore('events', () => {
   const events = ref<Event[]>([])
   const loading = ref(false)
   const error = ref('')
 
   function docToEvent(id: string, data: any): Event {
+    const venues: Venue[] | undefined = data.venues
+      ? data.venues.map((v: any) => venueFromFirestore(v))
+      : undefined
     return {
       id,
       title: data.title,
@@ -44,6 +60,7 @@ export const useEventStore = defineStore('events', () => {
       flyerURL: data.flyerURL || '',
       createdAt: data.createdAt?.toDate?.() || new Date(data.createdAt),
       category: data.category || 'General',
+      venues,
     }
   }
 
@@ -52,7 +69,7 @@ export const useEventStore = defineStore('events', () => {
     try {
       const q = query(collection(db, 'events'), orderBy('dateTime', 'asc'))
       const snapshot = await getDocs(q)
-      events.value = snapshot.docs.map((d) => docToEvent(d.id, d.data()))
+      events.value = snapshot.docs.map(d => docToEvent(d.id, d.data()))
     } catch (e: any) {
       error.value = e.message
     } finally {
@@ -67,27 +84,42 @@ export const useEventStore = defineStore('events', () => {
   }
 
   async function createEvent(event: Omit<Event, 'id' | 'createdAt'>, flyerFile?: File): Promise<string> {
-    let flyerURL = ''
-    if (flyerFile) {
-      flyerURL = await fileToBase64(flyerFile)
-    }
-    const docRef = await addDoc(collection(db, 'events'), {
-      ...event,
+    let flyerURL = event.flyerURL || ''
+    if (flyerFile) flyerURL = await fileToBase64(flyerFile)
+
+    const primaryLocation = event.venues?.length ? event.venues[0].address : event.location
+    const primaryDateTime  = event.venues?.length ? new Date(event.venues[0].dateTime) : new Date(event.dateTime)
+    const totalLimit       = event.venues?.length ? event.venues.reduce((s, v) => s + v.ticketLimit, 0) : event.ticketLimit
+
+    const docData: any = {
+      title: event.title,
+      description: event.description,
+      location: primaryLocation,
+      dateTime: Timestamp.fromDate(primaryDateTime),
+      ticketLimit: totalLimit,
+      ticketsRemaining: totalLimit,
+      createdBy: event.createdBy,
+      createdByName: event.createdByName,
       flyerURL,
-      dateTime: Timestamp.fromDate(new Date(event.dateTime)),
+      category: event.category,
       createdAt: Timestamp.now(),
-    })
+    }
+    if (event.venues?.length) docData.venues = event.venues.map(venueToFirestore)
+
+    const docRef = await addDoc(collection(db, 'events'), docData)
     await fetchEvents()
     return docRef.id
   }
 
   async function updateEvent(id: string, updates: Partial<Event>, flyerFile?: File) {
     const data: any = { ...updates }
-    if (flyerFile) {
-      data.flyerURL = await fileToBase64(flyerFile)
-    }
-    if (data.dateTime) {
-      data.dateTime = Timestamp.fromDate(new Date(data.dateTime))
+    if (flyerFile) data.flyerURL = await fileToBase64(flyerFile)
+    if (data.dateTime) data.dateTime = Timestamp.fromDate(new Date(data.dateTime))
+    if (data.venues) {
+      const vs = data.venues as Venue[]
+      data.venues = vs.map(venueToFirestore)
+      data.location = vs[0]?.address || data.location
+      data.ticketLimit = vs.reduce((s: number, v: Venue) => s + v.ticketLimit, 0)
     }
     delete data.id
     delete data.createdAt
@@ -97,7 +129,7 @@ export const useEventStore = defineStore('events', () => {
 
   async function deleteEvent(id: string) {
     await deleteDoc(doc(db, 'events', id))
-    events.value = events.value.filter((e) => e.id !== id)
+    events.value = events.value.filter(e => e.id !== id)
   }
 
   async function fetchMyEvents(userId: string) {
@@ -105,7 +137,7 @@ export const useEventStore = defineStore('events', () => {
     try {
       const q = query(collection(db, 'events'), where('createdBy', '==', userId), orderBy('dateTime', 'asc'))
       const snapshot = await getDocs(q)
-      return snapshot.docs.map((d) => docToEvent(d.id, d.data()))
+      return snapshot.docs.map(d => docToEvent(d.id, d.data()))
     } finally {
       loading.value = false
     }

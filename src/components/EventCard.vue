@@ -11,28 +11,28 @@ function formatTime(d: Date) {
 }
 
 const CAT_CLASS: Record<string, string> = {
-  'Music':      'cat-music',
-  'Food & Drink': 'cat-food',
-  'Arts':       'cat-arts',
-  'Sports':     'cat-sports',
-  'Community':  'cat-community',
-  'Education':  'cat-education',
-  'General':    'cat-general',
+  'Music':       'cat-music',
+  'Food & Drink':'cat-food',
+  'Arts':        'cat-arts',
+  'Sports':      'cat-sports',
+  'Community':   'cat-community',
+  'Education':   'cat-education',
+  'General':     'cat-general',
 }
 
 const CAT_EMOJI: Record<string, string> = {
-  'Music': '🎵', 'Food & Drink': '🍺', 'Arts': '🎨',
-  'Sports': '⚽', 'Community': '🤝', 'Education': '📚', 'General': '📌',
+  'Music':'🎵','Food & Drink':'🍺','Arts':'🎨',
+  'Sports':'⚽','Community':'🤝','Education':'📚','General':'📌',
 }
 
 const CAT_GRADIENT: Record<string, string> = {
-  'Music': 'linear-gradient(135deg,#4c1d95,#7c3aed)',
+  'Music':        'linear-gradient(135deg,#4c1d95,#7c3aed)',
   'Food & Drink': 'linear-gradient(135deg,#92400e,#d97706)',
-  'Arts': 'linear-gradient(135deg,#831843,#be185d)',
-  'Sports': 'linear-gradient(135deg,#064e3b,#047857)',
-  'Community': 'linear-gradient(135deg,#0c4a6e,#0e7490)',
-  'Education': 'linear-gradient(135deg,#1e1b4b,#4f46e5)',
-  'General': 'linear-gradient(135deg,#334155,#475569)',
+  'Arts':         'linear-gradient(135deg,#831843,#be185d)',
+  'Sports':       'linear-gradient(135deg,#064e3b,#047857)',
+  'Community':    'linear-gradient(135deg,#0c4a6e,#0e7490)',
+  'Education':    'linear-gradient(135deg,#1e1b4b,#4f46e5)',
+  'General':      'linear-gradient(135deg,#334155,#475569)',
 }
 </script>
 
@@ -60,6 +60,10 @@ const CAT_GRADIENT: Record<string, string> = {
       </div>
       <div class="ev-overlay"></div>
       <div class="ev-date-pill">{{ formatDate(event.dateTime) }}</div>
+      <!-- Multi-venue badge -->
+      <div v-if="event.venues && event.venues.length > 0" class="ev-multi-venue-badge">
+        🏟️ {{ event.venues.length }} venues
+      </div>
     </div>
 
     <!-- Body -->
@@ -73,11 +77,25 @@ const CAT_GRADIENT: Record<string, string> = {
       <div class="ev-meta">
         <div class="ev-meta-row">
           <span class="ev-meta-icon">📍</span>
-          <span class="ev-meta-text">{{ event.location.split(',')[0] }}</span>
+          <span class="ev-meta-text">
+            <template v-if="event.venues && event.venues.length > 0">
+              {{ event.venues.length }} locations · GR area
+            </template>
+            <template v-else>
+              {{ event.location.split(',')[0] }}
+            </template>
+          </span>
         </div>
         <div class="ev-meta-row">
           <span class="ev-meta-icon">🕐</span>
-          <span class="ev-meta-text">{{ formatTime(event.dateTime) }}</span>
+          <span class="ev-meta-text">
+            <template v-if="event.venues && event.venues.length > 0">
+              Multiple dates
+            </template>
+            <template v-else>
+              {{ formatTime(event.dateTime) }}
+            </template>
+          </span>
         </div>
       </div>
 
@@ -135,7 +153,11 @@ const CAT_GRADIENT: Record<string, string> = {
   width: 100%; height: 100%;
   display: flex; align-items: center; justify-content: center;
 }
-.ev-placeholder-emoji { font-size: 56px; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3)); opacity: 0.9; }
+.ev-placeholder-emoji {
+  font-size: 56px;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+  opacity: 0.9;
+}
 
 .ev-overlay {
   position: absolute; inset: 0;
@@ -148,10 +170,18 @@ const CAT_GRADIENT: Record<string, string> = {
   position: absolute; top: 12px; left: 12px;
   background: rgba(15,23,42,0.7);
   backdrop-filter: blur(8px);
-  color: white;
-  font-size: 11px; font-weight: 700;
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
+  color: white; font-size: 11px; font-weight: 700;
+  padding: 4px 10px; border-radius: var(--radius-full);
+  letter-spacing: 0.2px;
+}
+
+/* Multi-venue badge */
+.ev-multi-venue-badge {
+  position: absolute; top: 12px; right: 12px;
+  background: rgba(251,191,36,0.85);
+  backdrop-filter: blur(8px);
+  color: #78350f; font-size: 10px; font-weight: 700;
+  padding: 3px 9px; border-radius: var(--radius-full);
   letter-spacing: 0.2px;
 }
 
@@ -167,11 +197,9 @@ const CAT_GRADIENT: Record<string, string> = {
 
 .ev-title {
   font-size: 16px; font-weight: 700;
-  color: var(--text); line-height: 1.35;
-  letter-spacing: -0.3px; margin-bottom: 12px;
+  color: var(--text); line-height: 1.35; letter-spacing: -0.3px; margin-bottom: 12px;
   display: -webkit-box;
-  -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-  overflow: hidden;
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
 
 .ev-meta { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
