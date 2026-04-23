@@ -28,10 +28,11 @@ onMounted(async () => {
   if (authStore.isAuthenticated && authStore.user) {
     await seedEventsIfEmpty(authStore.user.uid, authStore.user.name)
   }
-  await eventStore.fetchEvents()
+  // Performance: lightweight query — only next 6 upcoming events
+  await eventStore.fetchUpcomingEvents(6)
 
   setTimeout(() => {
-    animateCount(Math.max(eventStore.events.length, 12), animatedEventCount)
+    animateCount(Math.max(eventStore.upcomingEvents.length, 12), animatedEventCount)
     animateCount(200, animatedUserCount)
     animateCount(15, animatedVenueCount)
   }, 400)
@@ -44,8 +45,16 @@ onMounted(async () => {
 })
 
 const upcomingEvents = computed(() =>
-  eventStore.events.filter(e => new Date(e.dateTime) >= new Date()).slice(0, 6)
+  [...eventStore.upcomingEvents]
+    .filter(e => new Date(e.dateTime) >= new Date(Date.now() - 12 * 60 * 60 * 1000))
+    .sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime())
+    .slice(0, 6)
 )
+
+function formatHeroDate(d: Date | string) {
+  const date = new Date(d)
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
 
 function handleSearch() {
   router.push(searchQuery.value.trim()
@@ -55,12 +64,12 @@ function handleSearch() {
 }
 
 const categories = [
-  { label: 'Music',      icon: '🎵', color: '#7c3aed' },
+  { label: 'Music',      icon: '🎵', color: '#0891b2' },
   { label: 'Food & Drink', icon: '🍺', color: '#b45309' },
   { label: 'Arts',       icon: '🎨', color: '#be185d' },
   { label: 'Sports',     icon: '⚽', color: '#047857' },
   { label: 'Community',  icon: '🤝', color: '#0e7490' },
-  { label: 'Education',  icon: '📚', color: '#4f46e5' },
+  { label: 'Education',  icon: '📚', color: '#2563eb' },
 ]
 </script>
 
@@ -121,22 +130,30 @@ const categories = [
         </div>
       </div>
 
-      <!-- Right: card stack -->
+      <!-- Right: card stack (auto-updates with nearest upcoming events) -->
       <div class="hero-visual">
-        <div class="hero-card hero-card-back">
-          <img src="https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=500&auto=format&fit=crop" alt="event" />
+        <div
+          v-if="upcomingEvents[1]"
+          class="hero-card hero-card-back"
+          @click="router.push(`/events/${upcomingEvents[1].id}`)"
+        >
+          <img :src="upcomingEvents[1].flyerURL || 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=500&auto=format&fit=crop'" alt="event" />
           <div class="hero-card-body">
-            <div class="hero-card-cat">🍺 Food & Drink</div>
-            <div class="hero-card-title">Founders Craft Beer Festival</div>
-            <div class="hero-card-date">📅 May 16 · Founders Brewing</div>
+            <div class="hero-card-cat">{{ upcomingEvents[1].category }}</div>
+            <div class="hero-card-title">{{ upcomingEvents[1].title }}</div>
+            <div class="hero-card-date">📅 {{ formatHeroDate(upcomingEvents[1].dateTime) }} · {{ upcomingEvents[1].location }}</div>
           </div>
         </div>
-        <div class="hero-card hero-card-front">
-          <img src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=500&auto=format&fit=crop" alt="event" />
+        <div
+          v-if="upcomingEvents[0]"
+          class="hero-card hero-card-front"
+          @click="router.push(`/events/${upcomingEvents[0].id}`)"
+        >
+          <img :src="upcomingEvents[0].flyerURL || 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=500&auto=format&fit=crop'" alt="event" />
           <div class="hero-card-body">
-            <div class="hero-card-cat">🎵 Music</div>
-            <div class="hero-card-title">Meijer Gardens Summer Concert</div>
-            <div class="hero-card-date">📅 June 12 · Grand Rapids</div>
+            <div class="hero-card-cat">{{ upcomingEvents[0].category }}</div>
+            <div class="hero-card-title">{{ upcomingEvents[0].title }}</div>
+            <div class="hero-card-date">📅 {{ formatHeroDate(upcomingEvents[0].dateTime) }} · {{ upcomingEvents[0].location }}</div>
           </div>
         </div>
         <div class="hero-stat-pill pill-1">
@@ -281,12 +298,12 @@ const categories = [
 
 <script lang="ts">
 const features = [
-  { emoji: '🎟️', title: 'Easy Registration',        grad: 'linear-gradient(135deg,#4f46e5,#7c3aed)', text: 'Register for any event in one click. Real-time ticket availability so you never miss limited spots.' },
-  { emoji: '📅', title: 'Calendar View',              grad: 'linear-gradient(135deg,#f59e0b,#ef4444)', text: 'Visual monthly calendar showing all Grand Rapids events. Never double-book again.' },
+  { emoji: '🎟️', title: 'Easy Registration',        grad: 'linear-gradient(135deg,#0891b2,#22d3ee)', text: 'Register for any event in one click. Real-time ticket availability so you never miss limited spots.' },
+  { emoji: '📅', title: 'Calendar View',              grad: 'linear-gradient(135deg,#f59e0b,#f97316)', text: 'Visual monthly calendar showing all Grand Rapids events. Never double-book again.' },
   { emoji: '🗓️', title: 'Google Calendar Sync',      grad: 'linear-gradient(135deg,#10b981,#06b6d4)', text: 'Add any event directly to your Google Calendar with one tap. Stay organized everywhere.' },
-  { emoji: '✨', title: 'Organizer Dashboard',        grad: 'linear-gradient(135deg,#ec4899,#8b5cf6)', text: 'Create events with flyer photos, manage ticket capacity, and track registrations easily.' },
-  { emoji: '🔒', title: 'Secure & Reliable',         grad: 'linear-gradient(135deg,#06b6d4,#4f46e5)', text: 'Powered by Firebase with role-based access control. Your data is always safe and accurate.' },
-  { emoji: '🏙️', title: 'Grand Rapids Focused',     grad: 'linear-gradient(135deg,#f97316,#ec4899)', text: 'Curated for West Michigan — from ArtPrize to Founders, from GVSU to downtown GR.' },
+  { emoji: '✨', title: 'Organizer Dashboard',        grad: 'linear-gradient(135deg,#0e7490,#0ea5e9)', text: 'Create events with flyer photos, manage ticket capacity, and track registrations easily.' },
+  { emoji: '🔒', title: 'Secure & Reliable',         grad: 'linear-gradient(135deg,#06b6d4,#0284c7)', text: 'Powered by Firebase with role-based access control. Your data is always safe and accurate.' },
+  { emoji: '🏙️', title: 'Grand Rapids Focused',     grad: 'linear-gradient(135deg,#f97316,#f59e0b)', text: 'Curated for West Michigan — from ArtPrize to Founders, from GVSU to downtown GR.' },
 ]
 </script>
 
@@ -299,9 +316,9 @@ const features = [
 }
 
 .hero-blob { position: absolute; border-radius: 50%; filter: blur(72px); pointer-events: none; animation: blob 12s ease-in-out infinite; }
-.blob-1 { width: 600px; height: 600px; background: rgba(124,58,237,.35); top: -200px; right: -100px; }
-.blob-2 { width: 400px; height: 400px; background: rgba(79,70,229,.25); bottom: 40px; left: -80px; animation-delay: -4s; }
-.blob-3 { width: 300px; height: 300px; background: rgba(167,139,250,.2); top: 35%; left: 42%; animation-delay: -8s; }
+.blob-1 { width: 600px; height: 600px; background: rgba(8,145,178,.32); top: -200px; right: -100px; }
+.blob-2 { width: 400px; height: 400px; background: rgba(34,211,238,.22); bottom: 40px; left: -80px; animation-delay: -4s; }
+.blob-3 { width: 300px; height: 300px; background: rgba(245,158,11,.18); top: 35%; left: 42%; animation-delay: -8s; }
 
 .floating-shapes { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
 .shape { position: absolute; font-size: 28px; opacity: .18; animation: float 7s ease-in-out infinite; }
@@ -354,7 +371,7 @@ const features = [
 }
 .hero-title-gradient {
   display: block;
-  background: linear-gradient(135deg, #c4b5fd, #f9a8d4, #fcd34d);
+  background: linear-gradient(135deg, #22d3ee, #f59e0b, #22d3ee);
   background-size: 200% 200%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -422,7 +439,10 @@ const features = [
 }
 .hero-card img { height: 155px; width: 100%; object-fit: cover; }
 .hero-card-body { padding: 14px 16px 16px; }
-.hero-card-cat { font-size: 11px; font-weight: 700; color: var(--primary); background: rgba(79,70,229,.08); border-radius: var(--radius-full); padding: 2px 8px; display: inline-block; margin-bottom: 6px; }
+.hero-card-cat { font-size: 11px; font-weight: 700; color: var(--primary); background: rgba(8,145,178,.1); border-radius: var(--radius-full); padding: 2px 8px; display: inline-block; margin-bottom: 6px; }
+.hero-card { cursor: pointer; transition: transform .3s var(--ease-bounce), box-shadow .3s var(--ease); }
+.hero-card-front:hover { transform: rotate(4deg) translate(30px, -24px) scale(1.02); }
+.hero-card-back:hover  { transform: rotate(-5deg) translate(-30px, 16px) scale(1.02); }
 .hero-card-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
 .hero-card-date { font-size: 12px; color: var(--text-muted); }
 .hero-card-back  { transform: rotate(-5deg) translate(-30px, 20px); z-index: 1; }
@@ -499,7 +519,7 @@ const features = [
   border:1px solid var(--border); border-radius:var(--radius-lg);
   transition:var(--transition);
 }
-.feat-card:hover { background:white; transform:translateY(-4px); box-shadow:var(--shadow-lg); border-color:rgba(79,70,229,.15); }
+.feat-card:hover { background:var(--surface); transform:translateY(-4px); box-shadow:var(--shadow-lg); border-color:rgba(8,145,178,.2); }
 .feat-icon {
   width:52px; height:52px; border-radius:var(--radius-md);
   display:flex; align-items:center; justify-content:center;
@@ -512,8 +532,8 @@ const features = [
 /* ─── CTA ─────────────────────────────────── */
 .cta-sec { background:var(--grad-hero); padding:96px 0; text-align:center; position:relative; overflow:hidden; }
 .cta-blob { position:absolute; border-radius:50%; filter:blur(80px); opacity:.2; pointer-events:none; }
-.cb1 { width:500px; height:500px; background:#7c3aed; top:-150px; right:-100px; }
-.cb2 { width:400px; height:400px; background:#4f46e5; bottom:-100px; left:-80px; }
+.cb1 { width:500px; height:500px; background:#0891b2; top:-150px; right:-100px; }
+.cb2 { width:400px; height:400px; background:#f59e0b; bottom:-100px; left:-80px; }
 .cta-title { font-size:clamp(26px,4vw,46px); font-weight:900; color:white; margin-bottom:16px; letter-spacing:-1.5px; }
 .cta-sub   { font-size:17px; color:rgba(255,255,255,.7); margin-bottom:40px; }
 .cta-btn-white   { background:white; color:var(--primary); font-weight:700; }
