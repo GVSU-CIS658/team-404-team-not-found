@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useEventStore } from '../stores/eventStore'
 import { useAuthStore } from '../stores/authStore'
 import { useRegistrationStore } from '../stores/registrationStore'
-import type { Event, Registration } from '../types'
+import type { Event, Registration, Venue } from '../types'
 
 const route = useRoute()
 const router = useRouter()
@@ -21,10 +21,22 @@ const regError = ref('')
 const eventRegistrations = ref<Registration[]>([])
 const showAttendees = ref(false)
 const loadingAttendees = ref(false)
+const userRegistration = ref<Registration | null>(null)
+
+// Venue selection state
+const venueStep = ref(false) // true = showing venue picker
+const selectedVenueId = ref<string | null>(null)
 
 const isOwner = computed(() =>
   authStore.user && event.value && event.value.createdBy === authStore.user.uid
 )
+
+const isMultiVenue = computed(() => !!(event.value?.venues && event.value.venues.length > 0))
+
+const selectedVenue = computed<Venue | null>(() => {
+  if (!selectedVenueId.value || !event.value?.venues) return null
+  return event.value.venues.find(v => v.id === selectedVenueId.value) || null
+})
 
 const ticketPercent = computed(() => {
   if (!event.value) return 0
@@ -56,38 +68,73 @@ function formatShortDate(d: Date) {
   return new Date(d).toLocaleDateString('en-US', { month:'short', day:'numeric' })
 }
 
-function googleCalendarLink(ev: Event) {
-  const start = new Date(ev.dateTime)
+function googleCalendarLink(ev: Event, venue?: Venue | null) {
+  const dt = venue ? venue.dateTime : ev.dateTime
+  const loc = venue ? venue.address : ev.location
+  const start = new Date(dt)
   const end = new Date(start.getTime() + 2 * 60 * 60 * 1000)
   const fmt = (d: Date) => d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'')
-  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(ev.title)}&dates=${fmt(start)}/${fmt(end)}&location=${encodeURIComponent(ev.location)}&details=${encodeURIComponent(ev.description)}`
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(ev.title)}&dates=${fmt(start)}/${fmt(end)}&location=${encodeURIComponent(loc)}&details=${encodeURIComponent(ev.description)}`
 }
 
-async function handleRegister() {
+function venueTicketPercent(v: Venue) {
+  return Math.round((v.ticketsRemaining / v.ticketLimit) * 100)
+}
+
+// Registration flow
+function initiateRegister() {
   if (!authStore.user) {
     router.push({ name: 'Login', query: { redirect: route.fullPath } })
     return
   }
+  if (isMultiVenue.value) {
+    venueStep.value = true
+  } else {
+    doRegister()
+  }
+}
+
+function selectVenueAndRegister(venueId: string) {
+  selectedVenueId.value = venueId
+  venueStep.value = false
+  doRegister(venueId)
+}
+
+async function doRegister(venueId?: string) {
   registering.value = true
   regError.value = ''
   try {
-    await regStore.registerForEvent(authStore.user.uid, authStore.user.name, event.value!.id!, event.value!.title)
+    const venue = venueId
+      ? event.value!.venues?.find(v => v.id === venueId)
+      : undefined
+    await regStore.registerForEvent(
+      authStore.user!.uid,
+      authStore.user!.name,
+      event.value!.id!,
+      event.value!.title,
+      venue?.id,
+      venue?.name,
+      venue?.address,
+    )
     isRegistered.value = true
+    userRegistration.value = await regStore.getUserVenueRegistration(authStore.user!.uid, event.value!.id!)
     event.value = await eventStore.fetchEvent(route.params.id as string)
   } catch (e: any) {
     regError.value = e.message
   } finally {
     registering.value = false
+    venueStep.value = false
   }
 }
 
 async function handleCancel() {
-  const reg = regStore.userRegistrations.find(r => r.eventId === event.value!.id)
+  const reg = userRegistration.value || regStore.userRegistrations.find(r => r.eventId === event.value!.id)
   if (!reg || !authStore.user) return
   cancelling.value = true
   try {
-    await regStore.cancelRegistration(reg.id!, event.value!.id!, authStore.user.uid)
+    await regStore.cancelRegistration(reg.id!, event.value!.id!, authStore.user.uid, reg.venueId)
     isRegistered.value = false
+    userRegistration.value = null
     event.value = await eventStore.fetchEvent(route.params.id as string)
   } finally {
     cancelling.value = false
@@ -115,6 +162,7 @@ onMounted(async () => {
   if (authStore.user) {
     isRegistered.value = await regStore.isUserRegistered(authStore.user.uid, id)
     await regStore.fetchUserRegistrations(authStore.user.uid)
+    userRegistration.value = await regStore.getUserVenueRegistration(authStore.user.uid, id)
   }
   loading.value = false
 })
@@ -146,10 +194,12 @@ onMounted(async () => {
         <div class="ev-cat-pill">
           {{ CAT_EMOJI[event.category || 'General'] }} {{ event.category || 'General' }}
         </div>
+        <div v-if="isMultiVenue" class="multi-venue-hero-badge">🏟️ Multi-Venue Event</div>
         <h1 class="ev-hero-title">{{ event.title }}</h1>
         <div class="ev-hero-meta">
-          <span>📅 {{ formatDate(event.dateTime) }}</span>
-          <span>🕐 {{ formatTime(event.dateTime) }}</span>
+          <span v-if="!isMultiVenue">📅 {{ formatDate(event.dateTime) }}</span>
+          <span v-if="!isMultiVenue">🕐 {{ formatTime(event.dateTime) }}</span>
+          <span v-if="isMultiVenue">📅 {{ event.venues!.length }} venue{{ event.venues!.length > 1 ? 's' : '' }} available</span>
           <span>📍 {{ event.location.split(',')[0] }}</span>
         </div>
       </div>
@@ -180,8 +230,53 @@ onMounted(async () => {
               <p class="ev-description">{{ event.description }}</p>
             </div>
 
-            <!-- Event info grid -->
-            <div class="ev-info-grid">
+            <!-- ── Multi-Venue cards ── -->
+            <div v-if="isMultiVenue" class="ev-section-card">
+              <h2 class="ev-section-title">🏟️ Available Venues</h2>
+              <p style="font-size:14px;color:var(--text-muted);margin-bottom:20px;">
+                Choose the venue nearest to you when you register. Each venue has its own date, time, and ticket availability.
+              </p>
+              <div class="venue-cards-grid">
+                <div
+                  v-for="(v, i) in event.venues"
+                  :key="v.id"
+                  class="venue-card"
+                  :class="{
+                    'venue-sold-out': v.ticketsRemaining <= 0,
+                    'venue-selected': userRegistration?.venueId === v.id,
+                  }"
+                >
+                  <div class="venue-card-num">Venue {{ i + 1 }}</div>
+                  <div class="venue-card-name">{{ v.name }}</div>
+                  <div class="venue-card-addr">📍 {{ v.address }}</div>
+                  <div class="venue-card-dt">
+                    📅 {{ formatDate(v.dateTime) }}<br>
+                    🕐 {{ formatTime(v.dateTime) }}
+                  </div>
+                  <!-- Tickets mini bar -->
+                  <div class="venue-mini-bar-wrap">
+                    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-bottom:4px;">
+                      <span>{{ v.ticketsRemaining }} left</span>
+                      <span>of {{ v.ticketLimit }}</span>
+                    </div>
+                    <div class="venue-mini-bar">
+                      <div
+                        class="venue-mini-fill"
+                        :style="{
+                          width: `${100 - venueTicketPercent(v)}%`,
+                          background: venueTicketPercent(v) > 50 ? 'var(--grad-green)' : venueTicketPercent(v) > 20 ? 'var(--grad-accent)' : 'linear-gradient(135deg,#ef4444,#dc2626)'
+                        }"
+                      ></div>
+                    </div>
+                  </div>
+                  <div v-if="v.ticketsRemaining <= 0" class="venue-sold-out-label">⛔ Sold Out</div>
+                  <div v-else-if="userRegistration?.venueId === v.id" class="venue-registered-label">✅ You're registered here!</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Single-venue info grid -->
+            <div v-if="!isMultiVenue" class="ev-info-grid">
               <div class="ev-info-item">
                 <div class="ev-info-icon">📅</div>
                 <div>
@@ -254,11 +349,14 @@ onMounted(async () => {
                   No registrations yet.
                 </div>
                 <div v-else class="attendee-list">
-                  <div v-for="(reg, i) in eventRegistrations" :key="reg.id" class="attendee-row">
+                  <div v-for="reg in eventRegistrations" :key="reg.id" class="attendee-row">
                     <div class="attendee-avatar">{{ reg.userName?.[0]?.toUpperCase() || '?' }}</div>
                     <div class="attendee-info">
                       <div class="attendee-name">{{ reg.userName }}</div>
-                      <div class="attendee-date">Registered {{ formatShortDate(reg.registeredAt) }}</div>
+                      <div class="attendee-date">
+                        Registered {{ formatShortDate(reg.registeredAt) }}
+                        <span v-if="reg.venueName" class="attendee-venue-pill">📍 {{ reg.venueName }}</span>
+                      </div>
                     </div>
                     <span class="badge badge-success">✓ Confirmed</span>
                   </div>
@@ -269,7 +367,39 @@ onMounted(async () => {
 
           <!-- Right: action sidebar -->
           <div class="ev-sidebar">
-            <div class="ev-sidebar-card">
+
+            <!-- ── Venue Picker Modal ── -->
+            <div v-if="venueStep" class="venue-picker-card">
+              <div class="venue-picker-header">
+                <h3>🏟️ Choose Your Venue</h3>
+                <button class="venue-picker-close" @click="venueStep = false">✕</button>
+              </div>
+              <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">
+                Select the venue closest to you:
+              </p>
+              <div class="venue-picker-list">
+                <button
+                  v-for="(v, i) in event.venues"
+                  :key="v.id"
+                  class="venue-pick-btn"
+                  :class="{ 'sold-out': v.ticketsRemaining <= 0 }"
+                  :disabled="v.ticketsRemaining <= 0 || registering"
+                  @click="selectVenueAndRegister(v.id)"
+                >
+                  <div class="vpb-top">
+                    <span class="vpb-num">{{ i + 1 }}</span>
+                    <span class="vpb-name">{{ v.name }}</span>
+                    <span v-if="v.ticketsRemaining <= 0" class="vpb-sold">Sold Out</span>
+                    <span v-else class="vpb-avail">{{ v.ticketsRemaining }} left</span>
+                  </div>
+                  <div class="vpb-addr">📍 {{ v.address }}</div>
+                  <div class="vpb-dt">📅 {{ formatDate(v.dateTime) }} · {{ formatTime(v.dateTime) }}</div>
+                </button>
+              </div>
+            </div>
+
+            <!-- ── Normal Sidebar ── -->
+            <div v-else class="ev-sidebar-card">
               <!-- Ticket status -->
               <div class="sidebar-tickets">
                 <div v-if="event.ticketsRemaining <= 0" class="ticket-status sold-out">
@@ -289,6 +419,11 @@ onMounted(async () => {
 
               <div v-if="regError" class="alert alert-error" style="margin-bottom:16px;">⚠️ {{ regError }}</div>
 
+              <!-- User's registered venue chip -->
+              <div v-if="isRegistered && userRegistration?.venueName" class="reg-venue-chip">
+                📍 Registered at <strong>{{ userRegistration.venueName }}</strong>
+              </div>
+
               <!-- Registration actions -->
               <template v-if="isRegistered">
                 <div class="alert alert-success" style="margin-bottom:14px;">
@@ -306,12 +441,13 @@ onMounted(async () => {
 
               <template v-else-if="event.ticketsRemaining > 0">
                 <button
-                  @click="handleRegister"
+                  @click="initiateRegister"
                   class="btn btn-primary btn-lg"
                   style="width:100%;margin-bottom:12px;"
                   :disabled="registering"
                 >
-                  <span v-if="registering">Registering…</span>
+                  <span v-if="registering">⏳ Registering…</span>
+                  <span v-else-if="isMultiVenue">🏟️ Choose Venue &amp; Register</span>
                   <span v-else>🎟️ Register Now — Free</span>
                 </button>
                 <p v-if="!authStore.isAuthenticated" style="font-size:12px;color:var(--text-muted);text-align:center;margin-bottom:12px;">
@@ -325,7 +461,7 @@ onMounted(async () => {
 
               <!-- Google Calendar -->
               <a
-                :href="googleCalendarLink(event)"
+                :href="googleCalendarLink(event, isMultiVenue ? (event.venues?.find(v => v.id === userRegistration?.venueId) ?? null) : null)"
                 target="_blank"
                 rel="noopener"
                 class="btn btn-secondary btn-lg"
@@ -334,21 +470,26 @@ onMounted(async () => {
                 📅 Add to Google Calendar
               </a>
 
-              <!-- Share -->
               <div class="sidebar-divider"></div>
               <div class="sidebar-detail-rows">
                 <div class="sdr">
                   <span class="sdr-icon">📅</span>
                   <div>
-                    <div class="sdr-label">Date & Time</div>
-                    <div class="sdr-value">{{ formatDate(event.dateTime) }} at {{ formatTime(event.dateTime) }}</div>
+                    <div class="sdr-label">Date &amp; Time</div>
+                    <div class="sdr-value">
+                      <template v-if="isMultiVenue">{{ event.venues!.length }} dates available</template>
+                      <template v-else>{{ formatDate(event.dateTime) }} at {{ formatTime(event.dateTime) }}</template>
+                    </div>
                   </div>
                 </div>
                 <div class="sdr">
                   <span class="sdr-icon">📍</span>
                   <div>
                     <div class="sdr-label">Venue</div>
-                    <div class="sdr-value">{{ event.location }}</div>
+                    <div class="sdr-value">
+                      <template v-if="isMultiVenue">{{ event.venues!.length }} locations — see below</template>
+                      <template v-else>{{ event.location }}</template>
+                    </div>
                   </div>
                 </div>
                 <div class="sdr">
@@ -361,6 +502,7 @@ onMounted(async () => {
               </div>
             </div>
           </div>
+
         </div>
       </div>
     </div>
@@ -370,221 +512,201 @@ onMounted(async () => {
 <style scoped>
 /* ── Hero ─────────────────────────────────────────── */
 .ev-hero {
-  position: relative;
-  min-height: 340px;
-  display: flex;
-  align-items: flex-end;
-  overflow: hidden;
+  position: relative; min-height: 340px;
+  display: flex; align-items: flex-end; overflow: hidden;
 }
-.ev-hero-bg {
-  position: absolute;
-  inset: 0;
-}
-.ev-hero-bg img {
-  width: 100%; height: 100%;
-  object-fit: cover;
-  filter: brightness(0.45);
-}
+.ev-hero-bg { position: absolute; inset: 0; }
+.ev-hero-bg img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.45); }
 .ev-hero-overlay {
-  position: absolute;
-  inset: 0;
+  position: absolute; inset: 0;
   background: linear-gradient(to top, rgba(15,23,42,0.85) 0%, rgba(15,23,42,0.3) 60%, transparent 100%);
 }
-.ev-hero-content {
-  position: relative;
-  z-index: 1;
-  padding-bottom: 40px;
-  padding-top: 32px;
-}
+.ev-hero-content { position: relative; z-index: 1; padding-bottom: 40px; padding-top: 32px; }
 
 .back-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: rgba(255,255,255,0.75);
-  font-size: 14px;
-  font-weight: 500;
-  text-decoration: none;
-  margin-bottom: 20px;
-  transition: var(--transition);
-  padding: 6px 12px;
-  background: rgba(255,255,255,0.1);
-  border-radius: var(--radius-full);
-  backdrop-filter: blur(8px);
+  display: inline-flex; align-items: center; gap: 6px;
+  color: rgba(255,255,255,0.75); font-size: 14px; font-weight: 500;
+  text-decoration: none; margin-bottom: 20px; transition: var(--transition);
+  padding: 6px 12px; background: rgba(255,255,255,0.1);
+  border-radius: var(--radius-full); backdrop-filter: blur(8px);
 }
 .back-btn:hover { color: white; background: rgba(255,255,255,0.18); text-decoration: none; }
 
 .ev-cat-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(255,255,255,0.15);
-  border: 1px solid rgba(255,255,255,0.25);
-  backdrop-filter: blur(8px);
-  color: white;
-  font-size: 12px; font-weight: 700;
-  letter-spacing: 0.5px; text-transform: uppercase;
-  padding: 4px 12px;
-  border-radius: var(--radius-full);
-  margin-bottom: 12px;
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
+  backdrop-filter: blur(8px); color: white; font-size: 12px; font-weight: 700;
+  letter-spacing: 0.5px; text-transform: uppercase; padding: 4px 12px;
+  border-radius: var(--radius-full); margin-bottom: 8px;
 }
-
+.multi-venue-hero-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(251,191,36,0.2); border: 1px solid rgba(251,191,36,0.4);
+  color: #fbbf24; font-size: 12px; font-weight: 700;
+  padding: 4px 12px; border-radius: var(--radius-full);
+  margin-bottom: 8px; margin-left: 8px;
+}
 .ev-hero-title {
-  font-size: clamp(26px, 4vw, 46px);
-  font-weight: 900;
-  color: white;
-  line-height: 1.1;
-  letter-spacing: -1px;
-  margin-bottom: 14px;
+  font-size: clamp(26px, 4vw, 46px); font-weight: 900; color: white;
+  line-height: 1.1; letter-spacing: -1px; margin-bottom: 14px;
 }
-
 .ev-hero-meta {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  flex-wrap: wrap;
-  font-size: 14px;
-  color: rgba(255,255,255,0.75);
-  font-weight: 500;
+  display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+  font-size: 14px; color: rgba(255,255,255,0.75); font-weight: 500;
 }
 
-/* ── Layout ───────────────────────────────────────── */
+/* ── Layout ── */
 .ev-detail-grid {
-  display: grid;
-  grid-template-columns: 1fr 360px;
-  gap: 32px;
-  align-items: start;
+  display: grid; grid-template-columns: 1fr 360px; gap: 32px; align-items: start;
 }
 
-/* ── Owner bar ─────────────────────────────────────── */
+/* ── Owner bar ── */
 .owner-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 18px;
-  background: rgba(79,70,229,0.06);
-  border: 1px solid rgba(79,70,229,0.15);
-  border-radius: var(--radius-md);
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-  gap: 10px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px; background: rgba(79,70,229,0.06);
+  border: 1px solid rgba(79,70,229,0.15); border-radius: var(--radius-md);
+  margin-bottom: 20px; flex-wrap: wrap; gap: 10px;
 }
 
-/* ── Section cards ─────────────────────────────────── */
+/* ── Section cards ── */
 .ev-section-card {
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 28px;
-  margin-bottom: 20px;
-  box-shadow: var(--shadow-card);
+  background: white; border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 28px; margin-bottom: 20px; box-shadow: var(--shadow-card);
 }
 .ev-section-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text);
-  margin-bottom: 14px;
-  letter-spacing: -0.3px;
+  font-size: 18px; font-weight: 700; color: var(--text);
+  margin-bottom: 14px; letter-spacing: -0.3px;
 }
-.ev-description {
-  font-size: 15px;
-  color: var(--text-muted);
-  line-height: 1.8;
+.ev-description { font-size: 15px; color: var(--text-muted); line-height: 1.8; }
+
+/* ── Multi-venue cards ── */
+.venue-cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 640px) { .venue-cards-grid { grid-template-columns: 1fr; } }
+
+.venue-card {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg); padding: 16px 18px; transition: var(--transition);
+}
+.venue-card:hover { border-color: var(--primary-light); box-shadow: var(--shadow-card); }
+.venue-card.venue-sold-out { opacity: 0.6; }
+.venue-card.venue-selected {
+  border-color: var(--primary); background: rgba(79,70,229,0.04);
+  box-shadow: 0 0 0 3px rgba(79,70,229,0.12);
+}
+.venue-card-num {
+  font-size: 10px; font-weight: 700; color: var(--primary); text-transform: uppercase;
+  letter-spacing: 0.6px; margin-bottom: 6px;
+}
+.venue-card-name { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.venue-card-addr { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+.venue-card-dt { font-size: 12px; color: var(--text-muted); line-height: 1.8; margin-bottom: 12px; }
+.venue-mini-bar-wrap { margin-bottom: 8px; }
+.venue-mini-bar {
+  height: 5px; background: var(--surface-2); border-radius: var(--radius-full); overflow: hidden;
+}
+.venue-mini-fill { height: 100%; border-radius: var(--radius-full); transition: width 0.8s var(--ease); }
+.venue-sold-out-label {
+  font-size: 11px; font-weight: 700; color: var(--danger);
+  background: rgba(239,68,68,0.08); padding: 3px 8px; border-radius: var(--radius-full);
+  display: inline-block; margin-top: 4px;
+}
+.venue-registered-label {
+  font-size: 11px; font-weight: 700; color: #059669;
+  background: rgba(16,185,129,0.1); padding: 3px 8px; border-radius: var(--radius-full);
+  display: inline-block; margin-top: 4px;
 }
 
-/* ── Info grid ─────────────────────────────────────── */
-.ev-info-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 20px;
-}
+/* ── Info grid ── */
+.ev-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
 .ev-info-item {
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 18px;
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  box-shadow: var(--shadow-card);
+  background: white; border: 1px solid var(--border); border-radius: var(--radius-md);
+  padding: 18px; display: flex; align-items: flex-start; gap: 14px; box-shadow: var(--shadow-card);
 }
 .ev-info-icon { font-size: 22px; flex-shrink: 0; }
 .ev-info-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); margin-bottom: 4px; }
 .ev-info-value { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.4; }
 
-/* ── Attendees ─────────────────────────────────────── */
+/* ── Attendees ── */
 .attendee-count-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--primary);
-  color: white;
-  font-size: 12px; font-weight: 700;
-  width: 22px; height: 22px;
-  border-radius: 50%;
-  margin-left: 8px;
-  vertical-align: middle;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--primary); color: white; font-size: 12px; font-weight: 700;
+  width: 22px; height: 22px; border-radius: 50%; margin-left: 8px; vertical-align: middle;
 }
 .ticket-progress-wrap { margin-bottom: 20px; }
 .ticket-progress-bar {
-  height: 8px;
-  background: var(--surface-2);
-  border-radius: var(--radius-full);
-  overflow: hidden;
+  height: 8px; background: var(--surface-2); border-radius: var(--radius-full); overflow: hidden;
 }
-.ticket-progress-fill {
-  height: 100%;
-  border-radius: var(--radius-full);
-  transition: width 0.8s var(--ease);
-}
-
+.ticket-progress-fill { height: 100%; border-radius: var(--radius-full); transition: width 0.8s var(--ease); }
 .attendee-list { display: flex; flex-direction: column; gap: 2px; margin-top: 12px; }
 .attendee-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border-radius: var(--radius-sm);
-  transition: var(--transition);
+  display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+  border-radius: var(--radius-sm); transition: var(--transition);
 }
 .attendee-row:hover { background: var(--surface-2); }
 .attendee-avatar {
-  width: 36px; height: 36px;
-  background: var(--grad-primary);
-  border-radius: 50%;
+  width: 36px; height: 36px; background: var(--grad-primary); border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  color: white; font-weight: 700; font-size: 14px;
-  flex-shrink: 0;
+  color: white; font-weight: 700; font-size: 14px; flex-shrink: 0;
 }
 .attendee-info { flex: 1; }
 .attendee-name { font-size: 14px; font-weight: 600; color: var(--text); }
-.attendee-date { font-size: 12px; color: var(--text-muted); }
+.attendee-date { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.attendee-venue-pill {
+  background: rgba(79,70,229,0.08); color: var(--primary);
+  font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: var(--radius-full);
+}
 
-/* ── Sidebar ───────────────────────────────────────── */
+/* ── Venue Picker ── */
+.venue-picker-card {
+  background: white; border: 1.5px solid var(--primary-light);
+  border-radius: var(--radius-xl); padding: 24px;
+  box-shadow: 0 0 0 4px rgba(79,70,229,0.08), var(--shadow-lg);
+  animation: fadeUp 0.25s var(--ease) both;
+}
+.venue-picker-header {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;
+}
+.venue-picker-header h3 { font-size: 18px; font-weight: 700; color: var(--text); }
+.venue-picker-close {
+  background: var(--surface-2); border: none; border-radius: 50%;
+  width: 28px; height: 28px; font-size: 12px; cursor: pointer;
+  color: var(--text-muted); display: flex; align-items: center; justify-content: center;
+  transition: var(--transition);
+}
+.venue-picker-close:hover { background: var(--surface-3); color: var(--text); }
+.venue-picker-list { display: flex; flex-direction: column; gap: 10px; }
+.venue-pick-btn {
+  text-align: left; background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg); padding: 14px 16px; cursor: pointer; transition: var(--transition);
+  width: 100%;
+}
+.venue-pick-btn:hover:not(:disabled) { border-color: var(--primary); background: rgba(79,70,229,0.04); transform: translateY(-1px); }
+.venue-pick-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.venue-pick-btn.sold-out { opacity: 0.5; }
+.vpb-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.vpb-num {
+  width: 22px; height: 22px; background: var(--grad-primary); color: white;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; flex-shrink: 0;
+}
+.vpb-name { font-size: 14px; font-weight: 700; color: var(--text); flex: 1; }
+.vpb-avail { font-size: 11px; font-weight: 600; color: #059669; background: rgba(16,185,129,0.1); padding: 2px 7px; border-radius: var(--radius-full); }
+.vpb-sold { font-size: 11px; font-weight: 600; color: var(--danger); background: rgba(239,68,68,0.08); padding: 2px 7px; border-radius: var(--radius-full); }
+.vpb-addr { font-size: 12px; color: var(--text-muted); margin-bottom: 3px; }
+.vpb-dt { font-size: 11px; color: var(--text-muted); }
+
+/* ── Sidebar ── */
 .ev-sidebar { position: sticky; top: 88px; }
 .ev-sidebar-card {
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  padding: 28px;
-  box-shadow: var(--shadow-lg);
+  background: white; border: 1px solid var(--border);
+  border-radius: var(--radius-xl); padding: 28px; box-shadow: var(--shadow-lg);
 }
-
 .sidebar-tickets {
-  text-align: center;
-  padding: 20px 0;
-  margin-bottom: 20px;
-  border-bottom: 1px solid var(--surface-2);
+  text-align: center; padding: 20px 0; margin-bottom: 20px; border-bottom: 1px solid var(--surface-2);
 }
 .ticket-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 14px; font-weight: 700;
-  padding: 6px 16px;
-  border-radius: var(--radius-full);
-  margin-bottom: 10px;
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 14px; font-weight: 700; padding: 6px 16px; border-radius: var(--radius-full); margin-bottom: 10px;
 }
 .ticket-status.available { background: rgba(16,185,129,0.1); color: #059669; }
 .ticket-status.low       { background: rgba(245,158,11,0.1); color: #d97706; }
@@ -592,18 +714,21 @@ onMounted(async () => {
 .ticket-numbers { font-size: 13px; color: var(--text-muted); }
 .ticket-numbers strong { color: var(--text); font-size: 22px; font-weight: 800; }
 
-.sidebar-divider {
-  border: none;
-  border-top: 1px solid var(--surface-2);
-  margin: 20px 0;
+.reg-venue-chip {
+  background: rgba(79,70,229,0.06); border: 1px solid rgba(79,70,229,0.15);
+  border-radius: var(--radius-md); padding: 8px 12px; font-size: 13px;
+  color: var(--text); margin-bottom: 12px; text-align: center;
 }
+.reg-venue-chip strong { color: var(--primary); }
+
+.sidebar-divider { border: none; border-top: 1px solid var(--surface-2); margin: 20px 0; }
 .sidebar-detail-rows { display: flex; flex-direction: column; gap: 14px; }
 .sdr { display: flex; align-items: flex-start; gap: 12px; }
 .sdr-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
 .sdr-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.7px; color: var(--text-muted); margin-bottom: 3px; }
 .sdr-value { font-size: 13px; font-weight: 500; color: var(--text); line-height: 1.4; }
 
-/* ── Responsive ────────────────────────────────────── */
+/* ── Responsive ── */
 @media (max-width: 900px) {
   .ev-detail-grid { grid-template-columns: 1fr; }
   .ev-sidebar { position: static; }
