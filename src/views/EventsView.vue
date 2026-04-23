@@ -76,7 +76,7 @@ function clearFilters() {
           />
           <button v-if="searchQuery" class="ev-clear-btn" @click="searchQuery = ''">✕</button>
         </div>
-        <div class="ev-count">
+        <div class="ev-count" v-if="!eventStore.loading">
           <strong>{{ filteredEvents.length }}</strong> event{{ filteredEvents.length !== 1 ? 's' : '' }}
         </div>
       </div>
