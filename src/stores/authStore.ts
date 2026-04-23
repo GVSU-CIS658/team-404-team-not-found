@@ -18,6 +18,9 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed(() => !!user.value)
   const isOrganizer = computed(() => user.value?.role === 'organizer')
+  // Owner = Rajeshwari (the app owner). Only she sees app-wide member stats.
+  const OWNER_EMAIL = 'galugur@mail.gvsu.edu'
+  const isOwner = computed(() => user.value?.email?.toLowerCase() === OWNER_EMAIL)
 
   async function init() {
     return new Promise<void>((resolve) => {
@@ -86,5 +89,5 @@ export const useAuthStore = defineStore('auth', () => {
     return snap.docs.map(d => ({ uid: d.id, ...d.data() } as User))
   }
 
-  return { user, loading, error, isAuthenticated, isOrganizer, init, signup, login, logout, fetchAllUsers }
+  return { user, loading, error, isAuthenticated, isOrganizer, isOwner, init, signup, login, logout, fetchAllUsers }
 })

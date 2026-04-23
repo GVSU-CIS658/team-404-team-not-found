@@ -20,19 +20,14 @@ const CAT_CLASS: Record<string, string> = {
   'General':     'cat-general',
 }
 
-const CAT_EMOJI: Record<string, string> = {
-  'Music':'🎵','Food & Drink':'🍺','Arts':'🎨',
-  'Sports':'⚽','Community':'🤝','Education':'📚','General':'📌',
-}
-
 const CAT_GRADIENT: Record<string, string> = {
-  'Music':        'linear-gradient(135deg,#4c1d95,#7c3aed)',
-  'Food & Drink': 'linear-gradient(135deg,#92400e,#d97706)',
-  'Arts':         'linear-gradient(135deg,#831843,#be185d)',
-  'Sports':       'linear-gradient(135deg,#064e3b,#047857)',
-  'Community':    'linear-gradient(135deg,#0c4a6e,#0e7490)',
-  'Education':    'linear-gradient(135deg,#1e1b4b,#4f46e5)',
-  'General':      'linear-gradient(135deg,#334155,#475569)',
+  'Music':        'linear-gradient(135deg,#4338ca,#6366f1)',
+  'Food & Drink': 'linear-gradient(135deg,#be123c,#fb7185)',
+  'Arts':         'linear-gradient(135deg,#7c2d92,#c026d3)',
+  'Sports':       'linear-gradient(135deg,#0f766e,#14b8a6)',
+  'Community':    'linear-gradient(135deg,#1e40af,#3b82f6)',
+  'Education':    'linear-gradient(135deg,#4338ca,#8b5cf6)',
+  'General':      'linear-gradient(135deg,#334155,#64748b)',
 }
 </script>
 
@@ -56,27 +51,27 @@ const CAT_GRADIENT: Record<string, string> = {
         class="ev-placeholder"
         :style="{ background: CAT_GRADIENT[event.category || 'General'] || CAT_GRADIENT['General'] }"
       >
-        <span class="ev-placeholder-emoji">{{ CAT_EMOJI[event.category || 'General'] || '📌' }}</span>
+        <span class="ev-placeholder-letter">{{ (event.category || 'E')[0].toUpperCase() }}</span>
       </div>
       <div class="ev-overlay"></div>
       <div class="ev-date-pill">{{ formatDate(event.dateTime) }}</div>
       <!-- Multi-venue badge -->
       <div v-if="event.venues && event.venues.length > 0" class="ev-multi-venue-badge">
-        🏟️ {{ event.venues.length }} venues
+        {{ event.venues.length }} venues
       </div>
     </div>
 
     <!-- Body -->
     <div class="ev-body">
       <span :class="['ev-cat', CAT_CLASS[event.category || 'General'] || 'cat-general']">
-        {{ CAT_EMOJI[event.category || 'General'] }} {{ event.category || 'General' }}
+        {{ event.category || 'General' }}
       </span>
 
       <h3 class="ev-title">{{ event.title }}</h3>
 
       <div class="ev-meta">
         <div class="ev-meta-row">
-          <span class="ev-meta-icon">📍</span>
+          <svg class="ev-meta-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
           <span class="ev-meta-text">
             <template v-if="event.venues && event.venues.length > 0">
               {{ event.venues.length }} locations · GR area
@@ -87,7 +82,7 @@ const CAT_GRADIENT: Record<string, string> = {
           </span>
         </div>
         <div class="ev-meta-row">
-          <span class="ev-meta-icon">🕐</span>
+          <svg class="ev-meta-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           <span class="ev-meta-text">
             <template v-if="event.venues && event.venues.length > 0">
               Multiple dates
@@ -103,12 +98,12 @@ const CAT_GRADIENT: Record<string, string> = {
         <span
           v-if="event.ticketsRemaining <= 0"
           class="ticket-pill sold-out"
-        >⛔ Sold Out</span>
+        >Sold Out</span>
         <span
           v-else-if="event.ticketsRemaining <= event.ticketLimit * 0.2"
           class="ticket-pill low"
-        >🔥 {{ event.ticketsRemaining }} left</span>
-        <span v-else class="ticket-pill ok">✅ {{ event.ticketsRemaining }} tickets</span>
+        >{{ event.ticketsRemaining }} left</span>
+        <span v-else class="ticket-pill ok">{{ event.ticketsRemaining }} tickets</span>
 
         <span class="ev-view-btn">View →</span>
       </div>
@@ -153,10 +148,12 @@ const CAT_GRADIENT: Record<string, string> = {
   width: 100%; height: 100%;
   display: flex; align-items: center; justify-content: center;
 }
-.ev-placeholder-emoji {
-  font-size: 56px;
-  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
-  opacity: 0.9;
+.ev-placeholder-letter {
+  font-size: 72px;
+  font-weight: 800;
+  color: rgba(255,255,255,0.9);
+  letter-spacing: -2px;
+  font-family: 'Playfair Display', Georgia, serif;
 }
 
 .ev-overlay {
@@ -204,7 +201,7 @@ const CAT_GRADIENT: Record<string, string> = {
 
 .ev-meta { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
 .ev-meta-row { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); }
-.ev-meta-icon { font-size: 13px; flex-shrink: 0; }
+.ev-meta-icon { flex-shrink: 0; color: var(--text-light); }
 .ev-meta-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .ev-footer {

@@ -81,11 +81,11 @@ const categories = [
     <div class="hero-blob blob-3"></div>
 
     <div class="floating-shapes">
-      <div class="shape shape-1">🎵</div>
-      <div class="shape shape-2">🎟️</div>
-      <div class="shape shape-3">🎨</div>
-      <div class="shape shape-4">⚡</div>
-      <div class="shape shape-5">🏆</div>
+      <div class="shape shape-dot dot-1"></div>
+      <div class="shape shape-dot dot-2"></div>
+      <div class="shape shape-dot dot-3"></div>
+      <div class="shape shape-ring ring-1"></div>
+      <div class="shape shape-ring ring-2"></div>
     </div>
 
     <div class="container hero-inner">
@@ -107,7 +107,7 @@ const categories = [
         </p>
 
         <form class="hero-search" @submit.prevent="handleSearch">
-          <span class="search-icon">🔍</span>
+          <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input
             v-model="searchQuery"
             type="text"
@@ -125,7 +125,7 @@ const categories = [
             class="hero-quick-btn"
             @click="router.push({ path: '/events', query: { cat: cat.label } })"
           >
-            {{ cat.icon }} {{ cat.label }}
+            {{ cat.label }}
           </button>
         </div>
       </div>
@@ -141,7 +141,7 @@ const categories = [
           <div class="hero-card-body">
             <div class="hero-card-cat">{{ upcomingEvents[1].category }}</div>
             <div class="hero-card-title">{{ upcomingEvents[1].title }}</div>
-            <div class="hero-card-date">📅 {{ formatHeroDate(upcomingEvents[1].dateTime) }} · {{ upcomingEvents[1].location }}</div>
+            <div class="hero-card-date">{{ formatHeroDate(upcomingEvents[1].dateTime) }} · {{ upcomingEvents[1].location }}</div>
           </div>
         </div>
         <div
@@ -153,18 +153,18 @@ const categories = [
           <div class="hero-card-body">
             <div class="hero-card-cat">{{ upcomingEvents[0].category }}</div>
             <div class="hero-card-title">{{ upcomingEvents[0].title }}</div>
-            <div class="hero-card-date">📅 {{ formatHeroDate(upcomingEvents[0].dateTime) }} · {{ upcomingEvents[0].location }}</div>
+            <div class="hero-card-date">{{ formatHeroDate(upcomingEvents[0].dateTime) }} · {{ upcomingEvents[0].location }}</div>
           </div>
         </div>
         <div class="hero-stat-pill pill-1">
-          <span>🎟️</span>
+          <div class="pill-dot"></div>
           <div>
             <div class="pill-num">{{ animatedEventCount }}+</div>
             <div class="pill-lbl">Events</div>
           </div>
         </div>
         <div class="hero-stat-pill pill-2">
-          <span>⭐</span>
+          <div class="pill-dot pill-dot-accent"></div>
           <div>
             <div class="pill-num">4.9</div>
             <div class="pill-lbl">Rating</div>
@@ -217,7 +217,7 @@ const categories = [
           :style="{ '--cat-color': cat.color }"
           @click="router.push({ path: '/events', query: { cat: cat.label } })"
         >
-          <div class="cat-icon">{{ cat.icon }}</div>
+          <div class="cat-dot" :style="{ background: cat.color }"></div>
           <div class="cat-name">{{ cat.label }}</div>
           <div class="cat-arr">→</div>
         </button>
@@ -230,7 +230,7 @@ const categories = [
     <div class="container">
       <div class="section-row-header">
         <div>
-          <div class="section-label">🔥 Don't Miss Out</div>
+          <div class="section-label">Don't Miss Out</div>
           <h2 class="section-title" style="margin-bottom:0">Upcoming Events</h2>
         </div>
         <router-link to="/events" class="btn btn-secondary">View All →</router-link>
@@ -247,9 +247,8 @@ const categories = [
       </div>
 
       <div v-else-if="upcomingEvents.length === 0" class="empty-state">
-        <span class="empty-icon">🎪</span>
         <div class="empty-title">No upcoming events yet</div>
-        <p class="empty-text">Check back soon — or create one yourself!</p>
+        <p class="empty-text">Check back soon — or create one yourself.</p>
         <router-link v-if="authStore.isOrganizer" to="/create-event" class="btn btn-primary btn-lg">Create Event</router-link>
       </div>
 
@@ -273,7 +272,7 @@ const categories = [
       </div>
       <div class="feat-grid">
         <div class="feat-card fade-up" v-for="feat in features" :key="feat.title">
-          <div class="feat-icon" :style="{ background: feat.grad }">{{ feat.emoji }}</div>
+          <div class="feat-icon" :style="{ background: feat.grad }"></div>
           <h3 class="feat-title">{{ feat.title }}</h3>
           <p class="feat-text">{{ feat.text }}</p>
         </div>
@@ -289,8 +288,8 @@ const categories = [
       <h2 class="cta-title">Ready to Experience Grand Rapids?</h2>
       <p class="cta-sub">Join hundreds of locals discovering events in West Michigan.</p>
       <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
-        <router-link to="/events" class="btn btn-xl cta-btn-white">Browse Events 🎟️</router-link>
-        <router-link v-if="!authStore.isAuthenticated" to="/signup" class="btn btn-xl cta-btn-outline">Create Account →</router-link>
+        <router-link to="/events" class="btn btn-xl cta-btn-white">Browse Events →</router-link>
+        <router-link v-if="!authStore.isAuthenticated" to="/signup" class="btn btn-xl cta-btn-outline">Create Account</router-link>
       </div>
     </div>
   </section>
@@ -316,17 +315,26 @@ const features = [
 }
 
 .hero-blob { position: absolute; border-radius: 50%; filter: blur(72px); pointer-events: none; animation: blob 12s ease-in-out infinite; }
-.blob-1 { width: 600px; height: 600px; background: rgba(8,145,178,.32); top: -200px; right: -100px; }
-.blob-2 { width: 400px; height: 400px; background: rgba(34,211,238,.22); bottom: 40px; left: -80px; animation-delay: -4s; }
-.blob-3 { width: 300px; height: 300px; background: rgba(245,158,11,.18); top: 35%; left: 42%; animation-delay: -8s; }
+.blob-1 { width: 600px; height: 600px; background: rgba(99,102,241,.35); top: -200px; right: -100px; }
+.blob-2 { width: 400px; height: 400px; background: rgba(139,92,246,.25); bottom: 40px; left: -80px; animation-delay: -4s; }
+.blob-3 { width: 300px; height: 300px; background: rgba(251,113,133,.2); top: 35%; left: 42%; animation-delay: -8s; }
 
 .floating-shapes { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
-.shape { position: absolute; font-size: 28px; opacity: .18; animation: float 7s ease-in-out infinite; }
-.shape-1 { top: 15%; left: 7%;  animation-duration: 6s; }
-.shape-2 { top: 60%; left: 5%;  animation-duration: 8s; animation-delay: -2s; }
-.shape-3 { top: 20%; right:12%; animation-duration: 7s; animation-delay: -1s; }
-.shape-4 { top: 70%; right: 8%; animation-duration: 9s; animation-delay: -3s; }
-.shape-5 { top: 40%; left:50%;  animation-duration: 6.5s; animation-delay: -1.5s; }
+.shape { position: absolute; animation: floatSlow 9s ease-in-out infinite; }
+.shape-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(255,255,255,0.4);
+  box-shadow: 0 0 12px rgba(165,180,252,0.6);
+}
+.shape-ring {
+  border: 1px solid rgba(165,180,252,0.25);
+  border-radius: 50%;
+}
+.dot-1 { top: 18%; left: 9%;  animation-delay: 0s; }
+.dot-2 { top: 65%; left: 6%;  animation-delay: -3s; }
+.dot-3 { top: 30%; right: 12%; animation-delay: -5s; }
+.ring-1 { width: 120px; height: 120px; top: 12%; right: 6%; animation-delay: -2s; }
+.ring-2 { width: 80px; height: 80px; bottom: 18%; right: 20%; animation-delay: -6s; }
 
 .hero-inner {
   display: grid;
@@ -371,7 +379,7 @@ const features = [
 }
 .hero-title-gradient {
   display: block;
-  background: linear-gradient(135deg, #22d3ee, #f59e0b, #22d3ee);
+  background: linear-gradient(135deg, #a5b4fc, #fb7185, #a5b4fc);
   background-size: 200% 200%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -398,7 +406,7 @@ const features = [
   margin-bottom: 20px;
   max-width: 520px;
 }
-.search-icon { font-size: 18px; }
+.search-icon { color: var(--text-muted); flex-shrink: 0; }
 .hero-search-input {
   flex: 1; border: none; background: transparent;
   font-size: 15px; color: var(--text); outline: none;
@@ -456,10 +464,15 @@ const features = [
   padding: 10px 16px;
   display: flex; align-items: center; gap: 10px;
   box-shadow: 0 8px 24px rgba(0,0,0,.15);
-  animation: float 5s ease-in-out infinite;
+  animation: floatSlow 5s ease-in-out infinite;
   z-index: 3;
-  font-size: 22px;
 }
+.pill-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 0 4px rgba(99,102,241,0.18);
+}
+.pill-dot-accent { background: var(--accent); box-shadow: 0 0 0 4px rgba(251,113,133,0.2); }
 .pill-1 { top: 20px;   left: -10px;  animation-delay: 0s; }
 .pill-2 { bottom: 90px; right: -10px; animation-delay: -2.5s; }
 .pill-num  { font-size: 17px; font-weight: 800; color: var(--text); line-height: 1.2; }
@@ -505,7 +518,8 @@ const features = [
 .cat-card:hover::before { opacity:1; }
 .cat-card:hover .cat-name, .cat-card:hover .cat-arr { color:white; }
 .cat-card:hover .cat-arr { opacity:1; }
-.cat-icon { font-size: 32px; position:relative; z-index:1; }
+.cat-dot { width: 14px; height: 14px; border-radius: 50%; position:relative; z-index:1; box-shadow: 0 0 0 6px rgba(99,102,241,0.06); }
+.cat-card:hover .cat-dot { box-shadow: 0 0 0 6px rgba(255,255,255,0.2); }
 .cat-name { font-size: 12px; font-weight:700; color:var(--text); position:relative; z-index:1; transition:var(--transition); text-align:center; }
 .cat-arr  { font-size: 16px; color:var(--text-light); opacity:0; transition:var(--transition); position:relative; z-index:1; }
 
@@ -523,7 +537,7 @@ const features = [
 .feat-icon {
   width:52px; height:52px; border-radius:var(--radius-md);
   display:flex; align-items:center; justify-content:center;
-  font-size:24px; margin-bottom:18px;
+  margin-bottom:18px;
   box-shadow:0 8px 20px rgba(0,0,0,.14);
 }
 .feat-title { font-size:16px; font-weight:700; color:var(--text); margin-bottom:8px; letter-spacing:-.3px; }
