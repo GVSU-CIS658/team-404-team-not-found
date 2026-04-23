@@ -175,14 +175,16 @@ const features = [
           class="ue-card fade-up"
           :style="{ '--ev-color': catColor(event.category), animationDelay: `${i * 70}ms` }"
         >
-          <div class="ue-bar"></div>
+          <div class="ue-poster" :style="{ background: `linear-gradient(135deg, ${catColor(event.category)}, ${catColor(event.category)}66)` }">
+            <img v-if="event.flyerURL" :src="event.flyerURL" :alt="event.title" loading="lazy" />
+            <div v-else class="ue-poster-letter">{{ (event.category || 'E')[0].toUpperCase() }}</div>
+            <div class="ue-poster-shade"></div>
+            <div class="ue-poster-cat" :style="{ color: catColor(event.category) }">{{ event.category || 'General' }}</div>
+          </div>
           <div class="ue-body">
-            <div class="ue-top">
-              <div class="ue-date" :style="{ background: catColor(event.category) + '1a', color: catColor(event.category) }">
-                <div class="ue-month">{{ monthShort(event.dateTime) }}</div>
-                <div class="ue-day">{{ dayNum(event.dateTime) }}</div>
-              </div>
-              <span class="ue-cat">{{ event.category || 'General' }}</span>
+            <div class="ue-date" :style="{ background: catColor(event.category) + '1a', color: catColor(event.category) }">
+              <div class="ue-month">{{ monthShort(event.dateTime) }}</div>
+              <div class="ue-day">{{ dayNum(event.dateTime) }}</div>
             </div>
 
             <h3 class="ue-title">{{ event.title }}</h3>
@@ -421,18 +423,47 @@ const features = [
   border-color: var(--ev-color, var(--primary));
   text-decoration: none; color: inherit;
 }
-.ue-bar {
-  height: 5px;
-  background: linear-gradient(90deg, var(--ev-color, var(--primary)), color-mix(in srgb, var(--ev-color, var(--primary)) 55%, transparent));
+.ue-poster {
+  position: relative;
+  height: 180px;
+  overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
 }
-.ue-body { padding: 22px 22px 20px; flex: 1; display: flex; flex-direction: column; }
+.ue-poster img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s var(--ease);
+}
+.ue-card:hover .ue-poster img { transform: scale(1.06); }
+.ue-poster-letter {
+  font-size: 80px; font-weight: 800;
+  font-family: 'Playfair Display', Georgia, serif;
+  color: rgba(255,255,255,0.9);
+  letter-spacing: -2px;
+}
+.ue-poster-shade {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 50%);
+}
+.ue-poster-cat {
+  position: absolute; top: 12px; left: 12px;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(8px);
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.7px; text-transform: uppercase;
+  padding: 4px 10px; border-radius: var(--radius-full);
+}
+.ue-body { padding: 20px 22px 20px; flex: 1; display: flex; flex-direction: column; position: relative; }
 
-.ue-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 12px; }
 .ue-date {
+  position: absolute;
+  top: -30px; right: 20px;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  width: 60px; height: 60px;
-  border-radius: 12px;
+  width: 56px; height: 56px;
+  border-radius: 14px;
   line-height: 1;
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.10);
 }
 .ue-month { font-size: 10px; font-weight: 700; letter-spacing: 0.8px; margin-bottom: 3px; }
 .ue-day   { font-size: 22px; font-weight: 800; }
