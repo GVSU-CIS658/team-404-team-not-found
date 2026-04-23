@@ -48,6 +48,9 @@ onMounted(async () => {
     await regStore.fetchUserRegistrations(authStore.user.uid)
     if (authStore.isOrganizer) {
       myEvents.value = (await eventStore.fetchMyEvents(authStore.user.uid)) || []
+    }
+    // Only the app owner fetches all users (member analytics are private to the owner).
+    if (authStore.isOwner) {
       allUsers.value = await authStore.fetchAllUsers()
     }
   }
@@ -61,11 +64,11 @@ onMounted(async () => {
     <div class="container page-hero-content">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
         <div>
-          <div class="page-hero-title">📊 Dashboard</div>
-          <div class="page-hero-sub">Welcome back, {{ authStore.user?.name }}!</div>
+          <div class="page-hero-title">Dashboard</div>
+          <div class="page-hero-sub">Welcome back, {{ authStore.user?.name }}</div>
         </div>
         <router-link v-if="authStore.isOrganizer" to="/create-event" class="btn btn-primary btn-lg" style="background:rgba(255,255,255,0.18);border:2px solid rgba(255,255,255,0.35);color:white;">
-          ✨ Create Event
+          Create Event
         </router-link>
       </div>
     </div>
@@ -77,29 +80,25 @@ onMounted(async () => {
       <!-- Stats row -->
       <div class="dash-stats" style="margin-bottom:32px;">
         <div class="dash-stat">
-          <div class="dash-stat-icon">🎟️</div>
           <div class="dash-stat-num">{{ regStore.userRegistrations.length }}</div>
           <div class="dash-stat-label">My Registrations</div>
         </div>
         <template v-if="authStore.isOrganizer">
           <div class="dash-stat">
-            <div class="dash-stat-icon">📅</div>
             <div class="dash-stat-num">{{ myEvents.length }}</div>
             <div class="dash-stat-label">Events Created</div>
           </div>
           <div class="dash-stat">
-            <div class="dash-stat-icon">👥</div>
             <div class="dash-stat-num">{{ totalRegistrations }}</div>
             <div class="dash-stat-label">Total Attendees</div>
           </div>
-          <div class="dash-stat">
-            <div class="dash-stat-icon">🌐</div>
-            <div class="dash-stat-num">{{ allUsers.length }}</div>
-            <div class="dash-stat-label">App Members</div>
-          </div>
         </template>
+        <!-- Owner-only private metric -->
+        <div v-if="authStore.isOwner" class="dash-stat dash-stat-owner">
+          <div class="dash-stat-num">{{ allUsers.length }}</div>
+          <div class="dash-stat-label">App Members · Owner Only</div>
+        </div>
         <div class="dash-stat">
-          <div class="dash-stat-icon">{{ authStore.isOrganizer ? '✨' : '🎪' }}</div>
           <div class="dash-stat-num" style="font-size:18px;">{{ authStore.isOrganizer ? 'Organizer' : 'Attendee' }}</div>
           <div class="dash-stat-label">Account Type</div>
         </div>
@@ -108,19 +107,19 @@ onMounted(async () => {
       <!-- Tabs -->
       <div class="dash-tabs">
         <button class="dash-tab" :class="{ active: activeTab === 'registrations' }" @click="activeTab = 'registrations'">
-          🎟️ My Registrations
+          My Registrations
         </button>
         <template v-if="authStore.isOrganizer">
           <button class="dash-tab" :class="{ active: activeTab === 'myEvents' }" @click="activeTab = 'myEvents'">
-            📅 My Events
+            My Events
           </button>
           <button class="dash-tab" :class="{ active: activeTab === 'attendees' }" @click="activeTab = 'attendees'">
-            👥 Event Attendees
-          </button>
-          <button class="dash-tab" :class="{ active: activeTab === 'members' }" @click="activeTab = 'members'">
-            🌐 App Members
+            Event Attendees
           </button>
         </template>
+        <button v-if="authStore.isOwner" class="dash-tab" :class="{ active: activeTab === 'members' }" @click="activeTab = 'members'">
+          App Members
+        </button>
       </div>
 
       <div v-if="loading" class="loading-wrap"><div class="spinner"></div></div>
@@ -128,14 +127,13 @@ onMounted(async () => {
       <!-- ── MY REGISTRATIONS ── -->
       <div v-else-if="activeTab === 'registrations'">
         <div v-if="regStore.userRegistrations.length === 0" class="empty-state">
-          <span class="empty-icon">🎪</span>
           <div class="empty-title">No registrations yet</div>
-          <p class="empty-text">Browse events and register for ones you're interested in!</p>
+          <p class="empty-text">Browse events and register for ones you're interested in.</p>
           <router-link to="/events" class="btn btn-primary btn-lg">Browse Events</router-link>
         </div>
         <div v-else class="dash-list">
           <div v-for="reg in regStore.userRegistrations" :key="reg.id" class="dash-list-item">
-            <div class="dli-icon">🎫</div>
+            <div class="dli-accent-bar"></div>
             <div class="dli-info">
               <router-link :to="`/events/${reg.eventId}`" class="dli-title">{{ reg.eventTitle }}</router-link>
               <div class="dli-meta">Registered {{ fmt(reg.registeredAt) }}</div>
@@ -151,21 +149,20 @@ onMounted(async () => {
       <!-- ── MY EVENTS ── -->
       <div v-else-if="activeTab === 'myEvents'">
         <div v-if="myEvents.length === 0" class="empty-state">
-          <span class="empty-icon">📅</span>
           <div class="empty-title">No events yet</div>
-          <p class="empty-text">Create your first event and start managing registrations!</p>
+          <p class="empty-text">Create your first event and start managing registrations.</p>
           <router-link to="/create-event" class="btn btn-primary btn-lg">Create Event</router-link>
         </div>
         <div v-else class="dash-list">
           <div v-for="ev in myEvents" :key="ev.id" class="dash-list-item">
             <div class="dli-img-wrap">
               <img v-if="ev.flyerURL && !ev.flyerURL.startsWith('data:')" :src="ev.flyerURL" :alt="ev.title" />
-              <div v-else class="dli-img-placeholder">{{ ev.category?.[0] || '📅' }}</div>
+              <div v-else class="dli-img-placeholder">{{ ev.category?.[0]?.toUpperCase() || 'E' }}</div>
             </div>
             <div class="dli-info">
               <router-link :to="`/events/${ev.id}`" class="dli-title">{{ ev.title }}</router-link>
               <div class="dli-meta">
-                📅 {{ fmt(ev.dateTime) }} · 🕐 {{ fmtTime(ev.dateTime) }}
+                {{ fmt(ev.dateTime) }} · {{ fmtTime(ev.dateTime) }}
               </div>
               <div class="dli-ticket-bar-wrap">
                 <div class="dli-ticket-bar">
@@ -190,7 +187,6 @@ onMounted(async () => {
       <!-- ── EVENT ATTENDEES ── -->
       <div v-else-if="activeTab === 'attendees'">
         <div v-if="myEvents.length === 0" class="empty-state">
-          <span class="empty-icon">👥</span>
           <div class="empty-title">No events yet</div>
           <p class="empty-text">Create events to see who registers for them.</p>
         </div>
@@ -237,7 +233,7 @@ onMounted(async () => {
                       </div>
                     </td>
                     <td class="td-muted">{{ fmt(reg.registeredAt) }}</td>
-                    <td><span class="badge badge-success">✓ Confirmed</span></td>
+                    <td><span class="badge badge-success">Confirmed</span></td>
                   </tr>
                 </tbody>
               </table>
@@ -249,11 +245,11 @@ onMounted(async () => {
       <!-- ── APP MEMBERS ── -->
       <div v-else-if="activeTab === 'members'">
         <div class="members-header">
-          <h2 style="font-size:18px;font-weight:700;color:var(--text);">🌐 All App Members</h2>
+          <h2 style="font-size:18px;font-weight:700;color:var(--text);">All App Members</h2>
           <span class="badge badge-primary">{{ allUsers.length }} total</span>
+          <span class="owner-tag">Owner view</span>
         </div>
         <div v-if="allUsers.length === 0" class="empty-state">
-          <span class="empty-icon">🌐</span>
           <div class="empty-title">No members yet</div>
         </div>
         <table v-else class="attendee-table" style="margin-top:16px;">
@@ -280,7 +276,7 @@ onMounted(async () => {
               <td class="td-muted">{{ u.email }}</td>
               <td>
                 <span class="badge" :class="u.role === 'organizer' ? 'badge-warning' : 'badge-primary'">
-                  {{ u.role === 'organizer' ? '✨ Organizer' : '🎟️ Attendee' }}
+                  {{ u.role === 'organizer' ? 'Organizer' : 'Attendee' }}
                 </span>
               </td>
               <td class="td-muted">{{ u.createdAt ? fmt(u.createdAt) : '—' }}</td>
@@ -301,16 +297,36 @@ onMounted(async () => {
   gap: 16px;
 }
 .dash-stat {
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 24px 20px;
+  padding: 28px 20px 22px;
   text-align: center;
   box-shadow: var(--shadow-card);
   transition: var(--transition);
+  position: relative;
 }
 .dash-stat:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-.dash-stat-icon { font-size: 28px; margin-bottom: 8px; }
+.dash-stat-owner {
+  border: 1px solid rgba(99,102,241,0.3);
+  background: linear-gradient(135deg, rgba(99,102,241,0.06), rgba(251,113,133,0.04));
+}
+.dash-stat-owner::before {
+  content: 'PRIVATE'; position: absolute; top: 8px; right: 10px;
+  font-size: 9px; font-weight: 700; color: var(--primary);
+  background: rgba(99,102,241,0.12); padding: 2px 6px; border-radius: 4px;
+  letter-spacing: 0.8px;
+}
+.owner-tag {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.8px;
+  color: var(--primary); background: rgba(99,102,241,0.1);
+  padding: 3px 8px; border-radius: var(--radius-full); text-transform: uppercase;
+}
+.dli-accent-bar {
+  width: 4px; height: 40px;
+  background: var(--grad-primary);
+  border-radius: var(--radius-full); flex-shrink: 0;
+}
 .dash-stat-num {
   font-size: 30px; font-weight: 800;
   background: var(--grad-primary);
@@ -347,14 +363,14 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 16px;
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 16px 20px;
   box-shadow: var(--shadow-card);
   transition: var(--transition);
 }
-.dash-list-item:hover { box-shadow: var(--shadow-md); border-color: rgba(79,70,229,0.15); }
+.dash-list-item:hover { box-shadow: var(--shadow-md); border-color: rgba(99,102,241,0.18); }
 .dli-icon { font-size: 28px; flex-shrink: 0; }
 .dli-img-wrap {
   width: 56px; height: 56px;
@@ -391,7 +407,7 @@ onMounted(async () => {
 
 /* Attendee event cards */
 .attendee-event-card {
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   overflow: hidden;
@@ -403,7 +419,7 @@ onMounted(async () => {
   padding: 18px 20px; cursor: pointer; gap: 12px;
   transition: var(--transition);
 }
-.aec-header:hover { background: rgba(79,70,229,0.03); }
+.aec-header:hover { background: rgba(99,102,241,0.04); }
 .aec-event-name { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
 .aec-meta { font-size: 13px; color: var(--text-muted); }
 .aec-right { display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
@@ -425,7 +441,7 @@ onMounted(async () => {
 .attendee-table {
   width: 100%;
   border-collapse: collapse;
-  background: white;
+  background: var(--surface);
   border-radius: var(--radius-md);
   overflow: hidden;
   box-shadow: var(--shadow-card);
@@ -442,7 +458,7 @@ onMounted(async () => {
 }
 .attendee-table td { padding: 13px 16px; border-bottom: 1px solid var(--surface-2); vertical-align: middle; }
 .attendee-table tr:last-child td { border-bottom: none; }
-.attendee-table tr:hover td { background: rgba(79,70,229,0.02); }
+.attendee-table tr:hover td { background: rgba(99,102,241,0.03); }
 .td-num { font-size: 12px; color: var(--text-muted); font-weight: 600; width: 40px; }
 .td-name { font-size: 14px; font-weight: 600; color: var(--text); }
 .td-muted { font-size: 13px; color: var(--text-muted); }

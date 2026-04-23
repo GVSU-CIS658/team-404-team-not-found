@@ -77,6 +77,11 @@ export const useRegistrationStore = defineStore('registrations', () => {
 
   async function cancelRegistration(registrationId: string, eventId: string, userId: string, venueId?: string) {
     await runTransaction(db, async (transaction) => {
+      const regRef = doc(db, 'registrations', registrationId)
+      const regSnap = await transaction.get(regRef)
+      // Guard: if registration is already cancelled (or missing), don't double-increment.
+      if (!regSnap.exists() || regSnap.data().status === 'cancelled') return
+
       const eventRef = doc(db, 'events', eventId)
       const eventSnap = await transaction.get(eventRef)
 
@@ -86,15 +91,18 @@ export const useRegistrationStore = defineStore('registrations', () => {
           const venues = [...eventData.venues]
           const idx = venues.findIndex((v: any) => v.id === venueId)
           if (idx !== -1) {
-            venues[idx] = { ...venues[idx], ticketsRemaining: venues[idx].ticketsRemaining + 1 }
+            // Cap at the venue's ticketLimit so we can never exceed capacity.
+            const capped = Math.min(venues[idx].ticketsRemaining + 1, venues[idx].ticketLimit)
+            venues[idx] = { ...venues[idx], ticketsRemaining: capped }
             const totalRemaining = venues.reduce((s: number, v: any) => s + v.ticketsRemaining, 0)
             transaction.update(eventRef, { venues, ticketsRemaining: totalRemaining })
           }
         } else {
-          transaction.update(eventRef, { ticketsRemaining: eventData.ticketsRemaining + 1 })
+          const capped = Math.min((eventData.ticketsRemaining ?? 0) + 1, eventData.ticketLimit ?? Infinity)
+          transaction.update(eventRef, { ticketsRemaining: capped })
         }
       }
-      transaction.update(doc(db, 'registrations', registrationId), { status: 'cancelled' })
+      transaction.update(regRef, { status: 'cancelled' })
     })
     await fetchUserRegistrations(userId)
   }
