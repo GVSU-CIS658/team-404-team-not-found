@@ -16,7 +16,7 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'organizer';
       allow update: if request.auth != null
         && (resource.data.createdBy == request.auth.uid
-            || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ticketsRemaining']));
+            || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ticketsRemaining', 'venues', 'ticketLimit']));
       allow delete: if request.auth != null
         && resource.data.createdBy == request.auth.uid;
     }
