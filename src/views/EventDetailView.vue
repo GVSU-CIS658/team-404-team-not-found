@@ -5,6 +5,7 @@ import { useEventStore } from '../stores/eventStore'
 import { useAuthStore } from '../stores/authStore'
 import { useRegistrationStore } from '../stores/registrationStore'
 import type { Event, Registration, Venue } from '../types'
+import RegistrationModal from '../components/RegistrationModal.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -26,6 +27,10 @@ const userRegistration = ref<Registration | null>(null)
 // Venue selection state
 const venueStep = ref(false) // true = showing venue picker
 const selectedVenueId = ref<string | null>(null)
+
+// Registration modal state
+const showRegModal = ref(false)
+const modalVenue = ref<{ id?: string; name?: string; address?: string }>({})
 
 const isOwner = computed(() =>
   authStore.user && event.value && event.value.createdBy === authStore.user.uid
@@ -81,7 +86,7 @@ function venueTicketPercent(v: Venue) {
   return Math.round((v.ticketsRemaining / v.ticketLimit) * 100)
 }
 
-// Registration flow
+// Registration flow — opens 3-step modal
 function initiateRegister() {
   if (!authStore.user) {
     router.push({ name: 'Login', query: { redirect: route.fullPath } })
@@ -90,41 +95,26 @@ function initiateRegister() {
   if (isMultiVenue.value) {
     venueStep.value = true
   } else {
-    doRegister()
+    modalVenue.value = {}
+    showRegModal.value = true
   }
 }
 
 function selectVenueAndRegister(venueId: string) {
   selectedVenueId.value = venueId
   venueStep.value = false
-  doRegister(venueId)
+  const v = event.value!.venues?.find(x => x.id === venueId)
+  modalVenue.value = { id: v?.id, name: v?.name, address: v?.address }
+  showRegModal.value = true
 }
 
-async function doRegister(venueId?: string) {
-  registering.value = true
-  regError.value = ''
-  try {
-    const venue = venueId
-      ? event.value!.venues?.find(v => v.id === venueId)
-      : undefined
-    await regStore.registerForEvent(
-      authStore.user!.uid,
-      authStore.user!.name,
-      event.value!.id!,
-      event.value!.title,
-      venue?.id,
-      venue?.name,
-      venue?.address,
-    )
-    isRegistered.value = true
-    userRegistration.value = await regStore.getUserVenueRegistration(authStore.user!.uid, event.value!.id!)
-    event.value = await eventStore.fetchEvent(route.params.id as string)
-  } catch (e: any) {
-    regError.value = e.message
-  } finally {
-    registering.value = false
-    venueStep.value = false
+async function onRegistrationDone() {
+  showRegModal.value = false
+  isRegistered.value = true
+  if (authStore.user) {
+    userRegistration.value = await regStore.getUserVenueRegistration(authStore.user.uid, event.value!.id!)
   }
+  event.value = await eventStore.fetchEvent(route.params.id as string)
 }
 
 async function handleCancel() {
@@ -521,6 +511,17 @@ onMounted(async () => {
         </div>
       </div>
     </div>
+
+    <!-- Registration Modal -->
+    <RegistrationModal
+      v-if="showRegModal && event"
+      :event="event"
+      :venue-id="modalVenue.id"
+      :venue-name="modalVenue.name"
+      :venue-address="modalVenue.address"
+      @close="showRegModal = false"
+      @done="onRegistrationDone"
+    />
   </div>
 </template>
 
