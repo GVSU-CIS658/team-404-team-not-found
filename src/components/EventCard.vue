@@ -119,7 +119,7 @@ const CAT_GRADIENT: Record<string, string> = {
 <style scoped>
 .ev-card {
   display: block;
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
@@ -131,7 +131,7 @@ const CAT_GRADIENT: Record<string, string> = {
 .ev-card:hover {
   transform: translateY(-6px);
   box-shadow: 0 24px 56px rgba(0,0,0,0.12);
-  border-color: rgba(79,70,229,0.18);
+  border-color: rgba(8,145,178,0.25);
   text-decoration: none;
   color: inherit;
 }
@@ -209,7 +209,7 @@ const CAT_GRADIENT: Record<string, string> = {
 
 .ev-footer {
   display: flex; align-items: center; justify-content: space-between;
-  padding-top: 12px; border-top: 1px solid var(--surface-2);
+  padding-top: 12px; border-top: 1px solid var(--border);
 }
 
 .ticket-pill {
