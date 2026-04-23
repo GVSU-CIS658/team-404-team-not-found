@@ -55,16 +55,16 @@ function initials(name: string) {
     <nav class="navbar">
       <div class="nav-inner">
         <router-link to="/" class="nav-brand" @click="closeMobile">
-          <div class="brand-icon">🗓️</div>
+          <div class="brand-mark"></div>
           <span class="brand-name">Schedulr</span>
         </router-link>
 
         <div class="nav-links" :class="{ 'mobile-open': mobileOpen }" @click="closeMobile">
-          <router-link to="/events" class="nav-link">🎟 Events</router-link>
-          <router-link to="/calendar" class="nav-link">📅 Calendar</router-link>
+          <router-link to="/events" class="nav-link">Events</router-link>
+          <router-link to="/calendar" class="nav-link">Calendar</router-link>
           <template v-if="authStore.isAuthenticated">
-            <router-link to="/dashboard" class="nav-link">📊 Dashboard</router-link>
-            <router-link v-if="authStore.isOrganizer" to="/create-event" class="nav-link">✨ Create Event</router-link>
+            <router-link to="/dashboard" class="nav-link">Dashboard</router-link>
+            <router-link v-if="authStore.isOrganizer" to="/create-event" class="nav-link">Create Event</router-link>
           </template>
         </div>
 
@@ -77,8 +77,8 @@ function initials(name: string) {
             :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
           >
             <span class="theme-toggle-icon" :class="{ dark: isDark }">
-              <span class="theme-icon sun">☀️</span>
-              <span class="theme-icon moon">🌙</span>
+              <svg class="theme-icon sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+              <svg class="theme-icon moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
             </span>
           </button>
 
@@ -113,7 +113,7 @@ function initials(name: string) {
       <div class="container">
         <div class="footer-grid">
           <div>
-            <div class="footer-brand-name">🗓️ Schedulr</div>
+            <div class="footer-brand-name">Schedulr</div>
             <p class="footer-tagline">Grand Rapids' premier event discovery and management platform. Find your next great experience.</p>
           </div>
           <div class="footer-col">
@@ -121,7 +121,7 @@ function initials(name: string) {
             <router-link to="/events">Browse Events</router-link>
             <router-link to="/calendar">Calendar View</router-link>
             <router-link to="/events?cat=Music">Music</router-link>
-            <router-link to="/events?cat=Food+%26+Drink">Food & Drink</router-link>
+            <router-link :to="{ path: '/events', query: { cat: 'Food & Drink' } }">Food & Drink</router-link>
           </div>
           <div class="footer-col">
             <div class="footer-col-title">Account</div>
@@ -140,7 +140,7 @@ function initials(name: string) {
         <hr class="footer-divider" />
         <div class="footer-bottom">
           <span>© 2026 Schedulr — Grand Rapids, Michigan</span>
-          <span>Built with ❤️ by 404 Team Not Found &mdash; CIS 658</span>
+          <span>Built by 404 Team Not Found &mdash; CIS 658</span>
         </div>
       </div>
     </footer>
@@ -148,6 +148,27 @@ function initials(name: string) {
 </template>
 
 <style scoped>
+.brand-mark {
+  width: 28px; height: 28px;
+  background: var(--grad-primary);
+  border-radius: 8px;
+  position: relative;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+}
+.brand-mark::before {
+  content: ''; position: absolute;
+  inset: 7px;
+  border: 2px solid rgba(255,255,255,0.85);
+  border-radius: 3px;
+}
+.brand-mark::after {
+  content: ''; position: absolute;
+  top: 4px; left: 8px; right: 8px;
+  height: 3px; background: rgba(255,255,255,0.85);
+  border-radius: 1px;
+}
+
 /* Theme Toggle Button */
 .theme-toggle {
   width: 40px;
@@ -188,7 +209,7 @@ function initials(name: string) {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  color: var(--text);
   transition: opacity 0.3s ease;
 }
 .theme-icon.sun { opacity: 1; }

@@ -7,39 +7,40 @@
 
 /* ─── Design Tokens ─────────────────────────────────────── */
 :root, [data-theme="light"] {
-  --primary:        #0891b2;
-  --primary-dark:   #0e7490;
-  --primary-light:  #22d3ee;
-  --accent:         #f59e0b;
-  --accent-dark:    #d97706;
+  --primary:        #6366f1;
+  --primary-dark:   #4f46e5;
+  --primary-light:  #a5b4fc;
+  --accent:         #fb7185;
+  --accent-dark:    #e11d48;
+  --mint:           #14b8a6;
   --success:        #10b981;
   --danger:         #ef4444;
   --warning:        #f59e0b;
-  --info:           #0284c7;
+  --info:           #6366f1;
 
-  --bg:             #f0f4f8;
+  --bg:             #f5f5fb;
   --surface:        #ffffff;
-  --surface-2:      #eef2f6;
-  --surface-3:      #dde5ee;
-  --border:         rgba(203, 213, 225, 0.7);
+  --surface-2:      #eef0f8;
+  --surface-3:      #e0e3f0;
+  --border:         rgba(226, 229, 243, 0.8);
 
-  --text:           #0a1628;
-  --text-muted:     #475569;
+  --text:           #0f172a;
+  --text-muted:     #64748b;
   --text-light:     #94a3b8;
 
-  --grad-hero:      linear-gradient(160deg, #050d1e 0%, #0a1628 35%, #0c1f3a 65%, #06101e 100%);
-  --grad-primary:   linear-gradient(135deg, #0891b2 0%, #22d3ee 100%);
-  --grad-accent:    linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
-  --grad-cool:      linear-gradient(135deg, #06b6d4 0%, #0284c7 100%);
-  --grad-warm:      linear-gradient(135deg, #f97316 0%, #f59e0b 100%);
-  --grad-green:     linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+  --grad-hero:      linear-gradient(160deg, #1e1b4b 0%, #312e81 40%, #4338ca 75%, #3730a3 100%);
+  --grad-primary:   linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  --grad-accent:    linear-gradient(135deg, #fb7185 0%, #f43f5e 100%);
+  --grad-cool:      linear-gradient(135deg, #6366f1 0%, #14b8a6 100%);
+  --grad-warm:      linear-gradient(135deg, #fb7185 0%, #f59e0b 100%);
+  --grad-green:     linear-gradient(135deg, #14b8a6 0%, #10b981 100%);
 
   --shadow-sm:  0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
   --shadow-md:  0 4px 20px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
   --shadow-lg:  0 20px 48px rgba(0,0,0,0.10), 0 8px 20px rgba(0,0,0,0.06);
   --shadow-xl:  0 40px 80px rgba(0,0,0,0.12), 0 16px 40px rgba(0,0,0,0.08);
-  --shadow-glow: 0 0 48px rgba(8, 145, 178, 0.35);
-  --shadow-card: 0 4px 24px rgba(8, 145, 178, 0.08), 0 1px 4px rgba(0,0,0,0.04);
+  --shadow-glow: 0 0 48px rgba(99, 102, 241, 0.3);
+  --shadow-card: 0 4px 24px rgba(99, 102, 241, 0.07), 0 1px 4px rgba(0,0,0,0.04);
 
   --radius-xs:  6px;
   --radius-sm:  10px;
@@ -111,8 +112,8 @@ html { scroll-behavior: smooth; }
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background:
-    radial-gradient(ellipse 80% 50% at 20% 0%, rgba(8,145,178,0.08) 0%, transparent 50%),
-    radial-gradient(ellipse 60% 40% at 85% 100%, rgba(245,158,11,0.06) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 50% at 20% 0%, rgba(99,102,241,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 85% 100%, rgba(251,113,133,0.06) 0%, transparent 55%),
     var(--bg);
   background-attachment: fixed;
   color: var(--text);
@@ -186,8 +187,8 @@ html.theme-transitioning *::after {
 [data-theme="dark"] .ticket-pill.sold-out { background: rgba(239,68,68,0.15); color: #f87171 !important; }
 /* Category pills need readable contrast in dark mode */
 [data-theme="dark"] .ev-cat {
-  background: rgba(34,211,238,0.12) !important;
-  color: #67e8f9 !important;
+  background: rgba(165,180,252,0.15) !important;
+  color: #a5b4fc !important;
 }
 [data-theme="dark"] .section-title,
 [data-theme="dark"] .section-subtitle,

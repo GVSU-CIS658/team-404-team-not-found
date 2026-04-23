@@ -45,16 +45,25 @@ export const useEventStore = defineStore('events', () => {
 
   function docToEvent(id: string, data: any): Event {
     const venues: Venue[] | undefined = data.venues
-      ? data.venues.map((v: any) => venueFromFirestore(v))
+      ? data.venues.map((v: any) => {
+          const vv = venueFromFirestore(v)
+          // Defensive clamp: remaining can never exceed limit (guards against legacy bad data)
+          vv.ticketsRemaining = Math.min(vv.ticketsRemaining, vv.ticketLimit)
+          return vv
+        })
       : undefined
+    const limit = data.ticketLimit
+    const remaining = typeof data.ticketsRemaining === 'number'
+      ? Math.min(data.ticketsRemaining, limit ?? Infinity)
+      : data.ticketsRemaining
     return {
       id,
       title: data.title,
       description: data.description,
       location: data.location,
       dateTime: data.dateTime?.toDate?.() || new Date(data.dateTime),
-      ticketLimit: data.ticketLimit,
-      ticketsRemaining: data.ticketsRemaining,
+      ticketLimit: limit,
+      ticketsRemaining: remaining,
       createdBy: data.createdBy,
       createdByName: data.createdByName || '',
       flyerURL: data.flyerURL || '',

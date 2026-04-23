@@ -293,9 +293,24 @@ onMounted(async () => {
               </div>
               <div class="ev-info-item" style="grid-column: 1/-1;">
                 <div class="ev-info-icon">📍</div>
-                <div>
+                <div style="flex:1;min-width:0;">
                   <div class="ev-info-label">Location</div>
                   <div class="ev-info-value">{{ event.location }}</div>
+                  <div class="ev-map-wrap">
+                    <iframe
+                      class="ev-map"
+                      :src="`https://www.google.com/maps?q=${encodeURIComponent(event.location + ', Grand Rapids, MI')}&output=embed`"
+                      loading="lazy"
+                      referrerpolicy="no-referrer-when-downgrade"
+                      allowfullscreen
+                    ></iframe>
+                    <a
+                      class="ev-map-open"
+                      :href="`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location + ', Grand Rapids, MI')}`"
+                      target="_blank"
+                      rel="noopener"
+                    >Open in Maps →</a>
+                  </div>
                 </div>
               </div>
               <div class="ev-info-item">
@@ -510,6 +525,35 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.ev-map-wrap {
+  margin-top: 12px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  position: relative;
+  background: var(--surface-2);
+}
+.ev-map {
+  width: 100%;
+  height: 280px;
+  border: 0;
+  display: block;
+  filter: saturate(0.9);
+}
+[data-theme="dark"] .ev-map { filter: invert(0.88) hue-rotate(180deg) saturate(0.7); }
+.ev-map-open {
+  position: absolute; top: 10px; right: 10px;
+  background: var(--surface);
+  color: var(--primary);
+  font-size: 12px; font-weight: 600;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-md);
+  text-decoration: none;
+  border: 1px solid var(--border);
+}
+.ev-map-open:hover { background: var(--primary); color: white; text-decoration: none; }
+
 /* ── Hero ─────────────────────────────────────────── */
 .ev-hero {
   position: relative; min-height: 340px;
