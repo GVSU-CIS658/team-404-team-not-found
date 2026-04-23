@@ -7,7 +7,7 @@ import {
   onAuthStateChanged,
   updateProfile,
 } from 'firebase/auth'
-import { doc, setDoc, getDoc } from 'firebase/firestore'
+import { doc, setDoc, getDoc, collection, getDocs, orderBy, query } from 'firebase/firestore'
 import { auth, db } from '../firebase'
 import type { User } from '../types'
 
@@ -80,5 +80,11 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null
   }
 
-  return { user, loading, error, isAuthenticated, isOrganizer, init, signup, login, logout }
+  async function fetchAllUsers(): Promise<User[]> {
+    const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'))
+    const snap = await getDocs(q)
+    return snap.docs.map(d => ({ uid: d.id, ...d.data() } as User))
+  }
+
+  return { user, loading, error, isAuthenticated, isOrganizer, init, signup, login, logout, fetchAllUsers }
 })
