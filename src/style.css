@@ -157,7 +157,8 @@ html.theme-transitioning *::after {
 [data-theme="dark"] .cat-card,
 [data-theme="dark"] .feat-card,
 [data-theme="dark"] .skel-card,
-[data-theme="dark"] .event-card {
+[data-theme="dark"] .event-card,
+[data-theme="dark"] .ev-card {
   background: var(--surface) !important;
   border-color: var(--border) !important;
 }
@@ -165,6 +166,49 @@ html.theme-transitioning *::after {
 [data-theme="dark"] textarea,
 [data-theme="dark"] select {
   background: var(--surface-2) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+/* Dark mode contrast fixes: titles + hard-coded whites */
+[data-theme="dark"] .ev-title,
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4 {
+  color: var(--text) !important;
+}
+[data-theme="dark"] .ev-meta-row,
+[data-theme="dark"] .ev-meta-text {
+  color: var(--text-muted) !important;
+}
+[data-theme="dark"] .ticket-pill.ok  { background: rgba(16,185,129,0.18); color: #34d399 !important; }
+[data-theme="dark"] .ticket-pill.low { background: rgba(245,158,11,0.18); color: #fbbf24 !important; }
+[data-theme="dark"] .ticket-pill.sold-out { background: rgba(239,68,68,0.15); color: #f87171 !important; }
+/* Category pills need readable contrast in dark mode */
+[data-theme="dark"] .ev-cat {
+  background: rgba(34,211,238,0.12) !important;
+  color: #67e8f9 !important;
+}
+[data-theme="dark"] .section-title,
+[data-theme="dark"] .section-subtitle,
+[data-theme="dark"] .cat-name,
+[data-theme="dark"] .feat-title,
+[data-theme="dark"] .feat-text,
+[data-theme="dark"] .empty-title,
+[data-theme="dark"] .empty-text {
+  color: var(--text) !important;
+}
+[data-theme="dark"] .section-subtitle,
+[data-theme="dark"] .feat-text,
+[data-theme="dark"] .empty-text {
+  color: var(--text-muted) !important;
+}
+/* Generic: any element hardcoded to white bg should fall back to surface in dark */
+[data-theme="dark"] .card,
+[data-theme="dark"] .panel,
+[data-theme="dark"] .box,
+[data-theme="dark"] .white-card {
+  background: var(--surface) !important;
   color: var(--text) !important;
   border-color: var(--border) !important;
 }
