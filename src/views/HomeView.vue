@@ -111,8 +111,8 @@ const features = [
       </h1>
 
       <p class="hero-subtitle">
-        From live music at DeVos to craft beer festivals at Founders — find, register,
-        and share the events that make West Michigan unforgettable.
+        Schedulr brings every Grand Rapids event into one place —
+        browse, register, and never miss a moment.
       </p>
 
       <div class="hero-ctas">
