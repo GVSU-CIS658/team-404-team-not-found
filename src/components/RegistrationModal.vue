@@ -74,7 +74,6 @@ async function confirm() {
       props.venueName,
       props.venueAddress,
     )
-    // Refresh event ticket count
     await eventStore.fetchEvent(props.event.id!)
     step.value = 3
   } catch (e: any) {

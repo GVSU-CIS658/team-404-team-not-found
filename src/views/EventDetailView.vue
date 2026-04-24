@@ -24,11 +24,9 @@ const showAttendees = ref(false)
 const loadingAttendees = ref(false)
 const userRegistration = ref<Registration | null>(null)
 
-// Venue selection state
-const venueStep = ref(false) // true = showing venue picker
+const venueStep = ref(false) // true while user is choosing a venue for multi-venue events
 const selectedVenueId = ref<string | null>(null)
 
-// Registration modal state
 const showRegModal = ref(false)
 const modalVenue = ref<{ id?: string; name?: string; address?: string }>({})
 

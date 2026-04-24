@@ -6,8 +6,6 @@ import { useAuthStore } from './stores/authStore'
 const authStore = useAuthStore()
 const router = useRouter()
 const mobileOpen = ref(false)
-
-// Theme
 const isDark = ref<boolean>(false)
 
 function applyTheme(dark: boolean) {
