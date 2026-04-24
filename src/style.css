@@ -8,18 +8,18 @@
 /* ─── Design Tokens ─────────────────────────────────────── */
 :root, [data-theme="light"] {
   /* Brand — exact design-file oklch palette */
-  --primary:        oklch(0.63 0.20 22);        /* ≈ #E8614A coral */
-  --primary-dark:   oklch(0.52 0.22 22);
-  --primary-light:  oklch(0.74 0.16 22);
+  --primary:        oklch(0.56 0.19 25);        /* deep red-coral */
+  --primary-dark:   oklch(0.46 0.20 25);
+  --primary-light:  oklch(0.68 0.15 25);
   --accent:         #E8A84A;
   --accent-dark:    #D4824A;
   --mint:           #4A9E6A;
   --success:        #4A9E6A;
-  --danger:         #E8614A;
+  --danger:         #C84C3D;
   --warning:        #E8A84A;
   --info:           #4A8BE8;
-  --coral-glow:     rgba(232, 97, 74, 0.28);
-  --coral-subtle:   rgba(232, 97, 74, 0.12);
+  --coral-glow:     rgba(200, 76, 61, 0.28);
+  --coral-subtle:   rgba(200, 76, 61, 0.12);
 
   /* Light theme surfaces — exact design-file tokens */
   --bg:             oklch(0.96 0.008 60);
@@ -36,17 +36,17 @@
   --text-light:     oklch(0.64 0.008 260);
 
   --grad-hero:      linear-gradient(135deg, oklch(0.11 0.015 265) 0%, oklch(0.09 0.02 20) 100%);
-  --grad-primary:   linear-gradient(135deg, #E8614A 0%, #F28974 100%);
+  --grad-primary:   linear-gradient(135deg, #C84C3D 0%, #D46856 100%);
   --grad-accent:    linear-gradient(135deg, #E8A84A 0%, #D4824A 100%);
   --grad-cool:      linear-gradient(135deg, #4A8BE8 0%, #A064D4 100%);
-  --grad-warm:      linear-gradient(135deg, #E8614A 0%, #E8A84A 100%);
+  --grad-warm:      linear-gradient(135deg, #C84C3D 0%, #E8A84A 100%);
   --grad-green:     linear-gradient(135deg, #4A9E6A 0%, #6BB380 100%);
 
   --shadow-sm:  0 1px 3px rgba(60,30,15,0.06), 0 1px 2px rgba(60,30,15,0.04);
   --shadow-md:  0 4px 20px rgba(60,30,15,0.08), 0 2px 8px rgba(60,30,15,0.04);
   --shadow-lg:  0 20px 48px rgba(60,30,15,0.10), 0 8px 20px rgba(60,30,15,0.06);
   --shadow-xl:  0 40px 80px rgba(60,30,15,0.12), 0 16px 40px rgba(60,30,15,0.08);
-  --shadow-glow: 0 8px 32px rgba(232, 97, 74, 0.28);
+  --shadow-glow: 0 8px 32px rgba(200, 76, 61, 0.28);
   --shadow-card: 0 4px 20px rgba(60,30,15,0.08), 0 1px 4px rgba(60,30,15,0.04);
 
   --radius-xs:  6px;
@@ -119,7 +119,7 @@ html { scroll-behavior: smooth; }
 body {
   font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background:
-    radial-gradient(ellipse 80% 50% at 20% 0%, rgba(232,97,74,0.10) 0%, transparent 50%),
+    radial-gradient(ellipse 80% 50% at 20% 0%, rgba(200,76,61,0.10) 0%, transparent 50%),
     radial-gradient(ellipse 60% 40% at 85% 100%, rgba(160,100,212,0.06) 0%, transparent 55%),
     var(--bg);
   background-attachment: fixed;
@@ -155,7 +155,7 @@ html.theme-transitioning *::after {
 }
 [data-theme="dark"] body {
   background:
-    radial-gradient(ellipse 60% 50% at 20% 0%, rgba(232,97,74,0.10) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 50% at 20% 0%, rgba(200,76,61,0.10) 0%, transparent 55%),
     radial-gradient(ellipse 50% 40% at 85% 100%, rgba(160,100,212,0.08) 0%, transparent 55%),
     oklch(0.11 0.015 265);
   background-attachment: fixed;
