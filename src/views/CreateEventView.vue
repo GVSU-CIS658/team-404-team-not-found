@@ -281,8 +281,21 @@ async function handleSubmit() {
   letter-spacing: -0.2px;
   margin-bottom: 20px;
   padding-bottom: 10px;
-  border-bottom: 2px solid rgba(79,70,229,0.12);
+  border-bottom: 2px solid var(--coral-subtle);
 }
+.form-section-title + .form-group,
+.form-section-title ~ .form-group { margin-top: 4px; }
+/* Ensure strong contrast for labels in light AND dark */
+:deep(label) {
+  color: var(--text) !important;
+  font-weight: 600;
+}
+:deep(input), :deep(textarea), :deep(select) {
+  color: var(--text) !important;
+  background: var(--surface);
+  border-color: rgba(0,0,0,0.12);
+}
+[data-theme="dark"] :deep(label) { color: var(--text) !important; }
 
 .label-hint { font-weight: 400; color: var(--text-muted); font-size: 12px; }
 
