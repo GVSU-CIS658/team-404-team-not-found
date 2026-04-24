@@ -7,9 +7,10 @@
 
 /* ─── Design Tokens ─────────────────────────────────────── */
 :root, [data-theme="light"] {
-  --primary:        #E8614A;
-  --primary-dark:   #C84A36;
-  --primary-light:  #F28974;
+  /* Brand — exact design-file oklch palette */
+  --primary:        oklch(0.63 0.20 22);        /* ≈ #E8614A coral */
+  --primary-dark:   oklch(0.52 0.22 22);
+  --primary-light:  oklch(0.74 0.16 22);
   --accent:         #E8A84A;
   --accent-dark:    #D4824A;
   --mint:           #4A9E6A;
@@ -17,20 +18,24 @@
   --danger:         #E8614A;
   --warning:        #E8A84A;
   --info:           #4A8BE8;
+  --coral-glow:     rgba(232, 97, 74, 0.28);
+  --coral-subtle:   rgba(232, 97, 74, 0.12);
 
-  --bg:             #f6efe7;
+  /* Light theme surfaces — exact design-file tokens */
+  --bg:             oklch(0.96 0.008 60);
   --surface:        #ffffff;
-  --surface-2:      #f3ebdf;
-  --surface-3:      #ece0d0;
-  --border:         rgba(58, 40, 28, 0.10);
-  --glass:          rgba(255, 255, 255, 0.78);
-  --glass-border:   rgba(255, 255, 255, 0.9);
+  --surface-2:      oklch(0.93 0.015 20);
+  --surface-3:      oklch(0.90 0.020 20);
+  --border:         rgba(0, 0, 0, 0.08);
+  --glass:          rgba(255, 255, 255, 0.65);
+  --glass-border:   rgba(255, 255, 255, 0.90);
 
-  --text:           #201510;
-  --text-muted:     #6b5544;
-  --text-light:     #9b8876;
+  /* Light theme text — high contrast on warm-off-white */
+  --text:           oklch(0.14 0.015 260);       /* near-black */
+  --text-muted:     oklch(0.46 0.01 260);
+  --text-light:     oklch(0.64 0.008 260);
 
-  --grad-hero:      linear-gradient(135deg, #140e1a 0%, #1b0f14 45%, #220c0d 100%);
+  --grad-hero:      linear-gradient(135deg, oklch(0.11 0.015 265) 0%, oklch(0.09 0.02 20) 100%);
   --grad-primary:   linear-gradient(135deg, #E8614A 0%, #F28974 100%);
   --grad-accent:    linear-gradient(135deg, #E8A84A 0%, #D4824A 100%);
   --grad-cool:      linear-gradient(135deg, #4A8BE8 0%, #A064D4 100%);
@@ -132,16 +137,17 @@ html.theme-transitioning *::after {
 
 /* ─── Dark Theme ─────────────────────────────────────────── */
 [data-theme="dark"] {
-  --bg:             #140e12;
-  --surface:        rgba(255,255,255,0.05);
-  --surface-2:      rgba(255,255,255,0.08);
-  --surface-3:      rgba(255,255,255,0.12);
-  --border:         rgba(255, 255, 255, 0.10);
-  --glass:          rgba(255,255,255,0.06);
-  --glass-border:   rgba(255,255,255,0.13);
-  --text:           #f2ebe4;
-  --text-muted:     #a09387;
-  --text-light:     #6e6258;
+  /* Dark theme surfaces — exact design-file tokens */
+  --bg:             oklch(0.11 0.015 265);       /* deep navy-black */
+  --surface:        rgba(255, 255, 255, 0.06);
+  --surface-2:      rgba(255, 255, 255, 0.08);
+  --surface-3:      rgba(255, 255, 255, 0.12);
+  --border:         rgba(255, 255, 255, 0.13);
+  --glass:          rgba(255, 255, 255, 0.07);
+  --glass-border:   rgba(255, 255, 255, 0.13);
+  --text:           oklch(0.94 0.006 60);        /* warm white */
+  --text-muted:     oklch(0.64 0.01 60);
+  --text-light:     oklch(0.44 0.008 60);
   --shadow-card: 0 4px 20px rgba(0,0,0,0.38), 0 1px 4px rgba(0,0,0,0.3);
   --shadow-sm:  0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
   --shadow-md:  0 4px 20px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.25);
@@ -149,13 +155,13 @@ html.theme-transitioning *::after {
 }
 [data-theme="dark"] body {
   background:
-    radial-gradient(ellipse 70% 50% at 20% 0%, rgba(232,97,74,0.12) 0%, transparent 55%),
-    radial-gradient(ellipse 60% 40% at 85% 100%, rgba(160,100,212,0.10) 0%, transparent 55%),
-    linear-gradient(135deg, #140e1a 0%, #1b0f14 45%, #220c0d 100%);
+    radial-gradient(ellipse 60% 50% at 20% 0%, rgba(232,97,74,0.10) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 85% 100%, rgba(160,100,212,0.08) 0%, transparent 55%),
+    oklch(0.11 0.015 265);
   background-attachment: fixed;
 }
 [data-theme="dark"] .navbar {
-  background: rgba(20,14,18,0.72) !important;
+  background: rgba(12, 14, 28, 0.72) !important;
   border-bottom-color: rgba(255,255,255,0.08) !important;
 }
 [data-theme="dark"] .section-white { background: var(--surface) !important; }
@@ -574,11 +580,18 @@ a:hover { text-decoration: underline; }
 
 /* ─── Forms ───────────────────────────────────────────────── */
 .form-group { margin-bottom: 20px; }
-label { display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text) !important;
+  margin-bottom: 8px;
+  letter-spacing: 0.1px;
+}
 input, select, textarea {
   width: 100%;
-  padding: 11px 15px;
-  border: 1.5px solid var(--border);
+  padding: 12px 15px;
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
   border-radius: var(--radius-sm);
   font-size: 15px;
   font-family: inherit;
@@ -589,9 +602,9 @@ input, select, textarea {
 }
 input:focus, select:focus, textarea:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+  box-shadow: 0 0 0 3px var(--coral-subtle);
 }
-input::placeholder, textarea::placeholder { color: var(--text-light); }
+input::placeholder, textarea::placeholder { color: var(--text-muted); opacity: 0.6; }
 textarea { resize: vertical; min-height: 120px; line-height: 1.6; }
 .form-hint { font-size: 12px; color: var(--text-muted); margin-top: 5px; }
 
