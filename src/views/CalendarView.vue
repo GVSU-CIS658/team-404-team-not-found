@@ -9,17 +9,28 @@ const currentDate = ref(new Date())
 const currentYear = computed(() => currentDate.value.getFullYear())
 const currentMonth = computed(() => currentDate.value.getMonth())
 
-const monthName = computed(() => {
-  return currentDate.value.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-})
+const monthName = computed(() =>
+  currentDate.value.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+)
 
-const daysInMonth = computed(() => {
-  return new Date(currentYear.value, currentMonth.value + 1, 0).getDate()
-})
+const daysInMonth = computed(() =>
+  new Date(currentYear.value, currentMonth.value + 1, 0).getDate()
+)
 
-const firstDayOfWeek = computed(() => {
-  return new Date(currentYear.value, currentMonth.value, 1).getDay()
-})
+const firstDayOfWeek = computed(() =>
+  new Date(currentYear.value, currentMonth.value, 1).getDay()
+)
+
+const CAT_COLORS: Record<string, string> = {
+  'Music':        '#A064D4',
+  'Food & Drink': '#D4824A',
+  'Arts':         '#E8614A',
+  'Sports':       '#4A8BE8',
+  'Community':    '#4A9E6A',
+  'Education':    '#E8A84A',
+  'General':      '#6b5544',
+}
+function catColor(c?: string) { return CAT_COLORS[c || 'General'] || CAT_COLORS['General'] }
 
 const calendarDays = computed(() => {
   const days: { day: number; events: Event[] }[] = []
@@ -45,59 +56,88 @@ function prevMonth() {
   d.setMonth(d.getMonth() - 1)
   currentDate.value = d
 }
-
 function nextMonth() {
   const d = new Date(currentDate.value)
   d.setMonth(d.getMonth() + 1)
   currentDate.value = d
 }
+function today() { currentDate.value = new Date() }
 
-function today() {
-  currentDate.value = new Date()
+function isToday(day: number) {
+  if (day === 0) return false
+  const now = new Date()
+  return (
+    day === now.getDate() &&
+    currentMonth.value === now.getMonth() &&
+    currentYear.value === now.getFullYear()
+  )
 }
 
 function formatTime(date: Date) {
   return new Date(date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
 }
 
-onMounted(() => {
-  eventStore.fetchEvents()
-})
+onMounted(() => { eventStore.fetchEvents() })
 </script>
 
 <template>
-  <div>
-    <div class="page-header">
-      <h1>Event Calendar</h1>
-      <p>See events at a glance</p>
-    </div>
-
-    <div class="calendar-nav">
-      <button class="btn-secondary btn-sm" @click="prevMonth">&larr; Prev</button>
-      <h2 class="calendar-month">{{ monthName }}</h2>
-      <button class="btn-secondary btn-sm" @click="today">Today</button>
-      <button class="btn-secondary btn-sm" @click="nextMonth">Next &rarr;</button>
-    </div>
-
-    <div class="calendar-grid">
-      <div class="calendar-header" v-for="day in ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']" :key="day">
-        {{ day }}
-      </div>
-      <div
-        v-for="(cell, i) in calendarDays"
-        :key="i"
-        class="calendar-cell"
-        :class="{ empty: cell.day === 0, 'has-events': cell.events.length > 0 }"
-      >
-        <div v-if="cell.day > 0" class="cell-day">{{ cell.day }}</div>
-        <div v-for="ev in cell.events.slice(0, 3)" :key="ev.id" class="cell-event">
-          <router-link :to="`/events/${ev.id}`">
-            <span class="cell-event-time">{{ formatTime(ev.dateTime) }}</span>
-            {{ ev.title }}
-          </router-link>
+  <div class="cal-page">
+    <div class="container">
+      <!-- Header -->
+      <div class="cal-head">
+        <div>
+          <h1 class="cal-title">Calendar View</h1>
+          <p class="cal-sub">Click any date to see its events</p>
         </div>
-        <div v-if="cell.events.length > 3" class="cell-more">
-          +{{ cell.events.length - 3 }} more
+        <div class="cal-nav">
+          <button class="cal-nav-btn" @click="prevMonth" aria-label="Previous month">‹</button>
+          <div class="cal-month">{{ monthName }}</div>
+          <button class="cal-nav-btn" @click="nextMonth" aria-label="Next month">›</button>
+          <button class="cal-today" @click="today">Today</button>
+        </div>
+      </div>
+
+      <!-- Grid -->
+      <div class="cal-grid">
+        <div class="cal-dow" v-for="day in ['SUN','MON','TUE','WED','THU','FRI','SAT']" :key="day">
+          {{ day }}
+        </div>
+
+        <div
+          v-for="(cell, i) in calendarDays"
+          :key="i"
+          class="cal-cell"
+          :class="{ empty: cell.day === 0, today: isToday(cell.day) }"
+        >
+          <div v-if="cell.day > 0" class="cal-day" :class="{ 'today-pill': isToday(cell.day) }">
+            {{ cell.day }}
+          </div>
+          <router-link
+            v-for="ev in cell.events.slice(0, 3)"
+            :key="ev.id"
+            :to="`/events/${ev.id}`"
+            class="cal-chip"
+            :style="{
+              background: catColor(ev.category) + '1a',
+              color: catColor(ev.category),
+              borderLeft: `3px solid ${catColor(ev.category)}`,
+            }"
+            :title="ev.title + ' — ' + formatTime(ev.dateTime)"
+          >
+            <span class="cal-chip-time">{{ formatTime(ev.dateTime) }}</span>
+            <span class="cal-chip-title">{{ ev.title }}</span>
+          </router-link>
+          <div v-if="cell.events.length > 3" class="cal-more">
+            +{{ cell.events.length - 3 }} more
+          </div>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div class="cal-legend">
+        <div class="cal-legend-item" v-for="(color, label) in CAT_COLORS" :key="label">
+          <span class="cal-legend-dot" :style="{ background: color }"></span>
+          {{ label }}
         </div>
       </div>
     </div>
@@ -105,86 +145,189 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.calendar-nav {
+.cal-page {
+  padding: 48px 0 80px;
+  min-height: calc(100vh - var(--nav-height));
+  background: var(--bg);
+}
+
+.cal-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+.cal-title {
+  font-size: clamp(32px, 5vw, 56px);
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -1.5px;
+  margin-bottom: 6px;
+}
+.cal-sub { font-size: 15px; color: var(--text-muted); }
+
+.cal-nav {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  gap: 10px;
 }
-.calendar-month {
-  margin: 0;
-  font-size: 1.25rem;
-  flex: 1;
+.cal-nav-btn {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 20px;
+  display: flex; align-items: center; justify-content: center;
+  transition: var(--transition);
+}
+.cal-nav-btn:hover { border-color: var(--primary); color: var(--primary); }
+.cal-month {
+  min-width: 160px;
   text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.5px;
+  padding: 0 12px;
 }
-.calendar-grid {
+.cal-today {
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 14px; font-weight: 600;
+  transition: var(--transition);
+}
+.cal-today:hover { border-color: var(--primary); color: var(--primary); }
+
+/* Grid */
+.cal-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
   overflow: hidden;
-  background: white;
+  box-shadow: var(--shadow-card);
 }
-.calendar-header {
-  padding: 0.75rem;
+
+.cal-dow {
+  padding: 14px 10px;
   text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.cal-cell {
+  min-height: 118px;
+  padding: 8px;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+  transition: background 0.2s;
+}
+.cal-cell:nth-child(7n) { border-right: none; }
+.cal-cell.empty { background: var(--surface-2); opacity: 0.5; }
+.cal-cell:hover:not(.empty) { background: var(--coral-subtle); }
+.cal-cell.today { background: var(--coral-subtle); }
+
+.cal-day {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2px;
+  padding: 2px 4px;
+}
+.cal-day.today-pill {
+  display: inline-flex;
+  align-items: center; justify-content: center;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  padding: 0;
+}
+
+.cal-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 4px 6px 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
   font-weight: 600;
-  font-size: 0.85rem;
-  color: #64748b;
-  background: #f8fafc;
-  border-bottom: 1px solid #e2e8f0;
-}
-.calendar-cell {
-  min-height: 100px;
-  padding: 0.5rem;
-  border-bottom: 1px solid #e2e8f0;
-  border-right: 1px solid #e2e8f0;
-  font-size: 0.8rem;
-}
-.calendar-cell:nth-child(7n) {
-  border-right: none;
-}
-.calendar-cell.empty {
-  background: #fafafa;
-}
-.cell-day {
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-  color: #1e293b;
-}
-.cell-event {
-  margin-bottom: 0.2rem;
-}
-.cell-event a {
-  display: block;
-  padding: 0.15rem 0.3rem;
-  background: #eef2ff;
-  border-radius: 4px;
-  color: #4f46e5;
   text-decoration: none;
-  font-size: 0.75rem;
+  overflow: hidden;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.cal-chip:hover {
+  transform: translateX(2px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  text-decoration: none;
+}
+.cal-chip-time { font-size: 10px; font-weight: 700; opacity: 0.85; }
+.cal-chip-title {
+  font-size: 11px;
+  font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.cell-event a:hover {
-  background: #e0e7ff;
-}
-.cell-event-time {
+
+.cal-more {
+  font-size: 10px;
+  color: var(--text-muted);
   font-weight: 600;
+  padding: 2px 6px;
 }
-.cell-more {
-  font-size: 0.7rem;
-  color: #64748b;
-  padding: 0.1rem 0.3rem;
+
+/* Legend */
+.cal-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-top: 24px;
+  padding: 18px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
 }
+.cal-legend-item {
+  display: flex; align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+.cal-legend-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+}
+
+/* Dark-mode adjustments */
+[data-theme="dark"] .cal-chip {
+  background-color: rgba(255,255,255,0.04) !important;
+}
+
 @media (max-width: 768px) {
-  .calendar-cell {
-    min-height: 60px;
-    padding: 0.25rem;
-  }
-  .cell-event a {
-    font-size: 0.65rem;
-  }
+  .cal-cell { min-height: 70px; padding: 4px; }
+  .cal-chip-title { font-size: 9px; }
+  .cal-chip-time { display: none; }
+  .cal-day { font-size: 11px; }
+  .cal-nav { flex-wrap: wrap; justify-content: flex-start; }
+  .cal-month { min-width: 120px; font-size: 18px; }
 }
 </style>
