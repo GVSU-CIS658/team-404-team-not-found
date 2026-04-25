@@ -141,7 +141,7 @@ Enforced in `firestore.rules` and re-checked in each Cloud Function.
 
 The codebase is split into two clearly separated parts:
 
-### 🎨 Frontend (Vue 3 SPA) — `src/`
+### Frontend (Vue 3 SPA) — `src/`
 ```
 src/
 ├── main.ts                  ← Vue app bootstrap, router & Pinia install
@@ -171,7 +171,7 @@ src/
 └── types/                   ← shared TypeScript interfaces
 ```
 
-### ⚙️ Backend (Firebase Cloud Functions) — `functions/`
+### Backend (Firebase Cloud Functions) — `functions/`
 ```
 functions/
 ├── src/
@@ -182,7 +182,7 @@ functions/
 └── tsconfig.json            ← backend TS compilation
 ```
 
-### 🔧 Shared Infrastructure (root)
+### Shared Infrastructure (root)
 ```
 firebase.json                ← hosting + functions deploy targets
 firestore.rules              ← security rules (frontend ↔ backend bridge)
