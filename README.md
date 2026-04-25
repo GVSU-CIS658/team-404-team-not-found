@@ -59,12 +59,18 @@ the Admin SDK inside a transaction when ticket counts are involved.
 
 ## 3. API Overview (Cloud Functions)
 
-| Function                | Caller role | Purpose                                               |
-|-------------------------|-------------|-------------------------------------------------------|
-| `createEvent`           | organizer   | Validates + creates an event                          |
-| `registerForEvent`      | any auth    | Transactional: checks capacity, decrements tickets    |
-| `cancelRegistration`    | owner       | Transactional: re-increments tickets, caps at limit   |
-| `deleteEvent`           | organizer   | Deletes event + cascades registration cleanup         |
+All five callables live in `back-end/src/` and are invoked from the SPA
+via `httpsCallable(functions, '<name>')`. Each one re-validates the
+caller's auth token and (where applicable) the user's role before
+mutating Firestore via the Admin SDK.
+
+| Function                | Caller role | Purpose                                                          |
+|-------------------------|-------------|------------------------------------------------------------------|
+| `createEvent`           | organizer   | Validates fields, supports single- or multi-venue, creates event |
+| `updateEvent`           | event owner | Whitelisted-field update; recomputes ticket totals on venues     |
+| `deleteEvent`           | event owner | Cascades by marking related registrations as cancelled           |
+| `registerForEvent`      | any auth    | Transactional: decrements venue/event tickets, writes reg doc    |
+| `cancelRegistration`    | reg owner   | Idempotent: re-increments tickets capped at limit                |
 
 ## 4. Database Design
 
