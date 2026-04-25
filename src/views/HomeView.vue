@@ -326,7 +326,7 @@ const features = [
 .hero-title {
   font-size: clamp(40px, 7vw, 80px);
   font-weight: 800;
-  color: white;
+  color: var(--hero-text);
   line-height: 1.05;
   letter-spacing: -2.5px;
   margin-bottom: 24px;
@@ -341,7 +341,7 @@ const features = [
 
 .hero-subtitle {
   font-size: 19px;
-  color: rgba(255,255,255,0.72);
+  color: var(--hero-text-muted);
   line-height: 1.65;
   margin: 0 auto 40px;
   max-width: 640px;
@@ -365,21 +365,21 @@ const features = [
 
 .btn-glass {
   display: inline-flex; align-items: center; justify-content: center;
-  background: rgba(255,255,255,0.08);
-  color: white; font-weight: 600; font-size: 15px;
+  background: var(--hero-glass-bg);
+  color: var(--hero-text); font-weight: 600; font-size: 15px;
   padding: 14px 28px; border-radius: var(--radius-full);
   text-decoration: none;
-  border: 1px solid rgba(255,255,255,0.18);
+  border: 1px solid var(--hero-glass-border);
   backdrop-filter: blur(10px);
   transition: var(--transition);
 }
-.btn-glass:hover { background: rgba(255,255,255,0.14); color: white; text-decoration: none; border-color: rgba(255,255,255,0.3); }
+.btn-glass:hover { background: var(--hero-glass-bg); color: var(--hero-text); text-decoration: none; border-color: var(--primary); }
 
 .hero-stats {
   display: flex; align-items: center; justify-content: center;
   flex-wrap: wrap; gap: 0;
   padding-top: 40px;
-  border-top: 1px solid rgba(255,255,255,0.08);
+  border-top: 1px solid var(--hero-divider);
 }
 .hero-stat { text-align: center; padding: 0 40px; }
 .stat-num {
@@ -391,8 +391,8 @@ const features = [
   letter-spacing: -1px;
   margin-bottom: 4px;
 }
-.stat-lbl { font-size: 12px; color: rgba(255,255,255,0.55); font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; }
-.stat-div { width: 1px; height: 40px; background: rgba(255,255,255,0.1); }
+.stat-lbl { font-size: 12px; color: var(--hero-text-muted); font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; }
+.stat-div { width: 1px; height: 40px; background: var(--hero-divider); }
 
 /* ─── Sections ──────────────────────────────────── */
 .section-white { padding: 80px 0; background: var(--surface); }
@@ -556,8 +556,8 @@ const features = [
 .cta-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.25; pointer-events: none; }
 .cb1 { width: 500px; height: 500px; background: #C84C3D; top: -150px; right: -100px; }
 .cb2 { width: 400px; height: 400px; background: #A064D4; bottom: -100px; left: -80px; }
-.cta-title { font-size: clamp(28px,4vw,48px); font-weight: 800; color: white; margin-bottom: 16px; letter-spacing: -1.5px; }
-.cta-sub   { font-size: 17px; color: rgba(255,255,255,.7); margin-bottom: 40px; }
+.cta-title { font-size: clamp(28px,4vw,48px); font-weight: 800; color: var(--hero-text); margin-bottom: 16px; letter-spacing: -1.5px; }
+.cta-sub   { font-size: 17px; color: var(--hero-text-muted); margin-bottom: 40px; }
 
 /* ─── Responsive ──────────────────────────── */
 @media (max-width: 1024px) {

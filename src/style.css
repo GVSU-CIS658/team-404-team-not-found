@@ -35,7 +35,14 @@
   --text-muted:     oklch(0.46 0.01 260);
   --text-light:     oklch(0.64 0.008 260);
 
-  --grad-hero:      linear-gradient(135deg, oklch(0.11 0.015 265) 0%, oklch(0.09 0.02 20) 100%);
+  /* Hero surface — warm off-white in light mode so it reads "light" */
+  --grad-hero:      linear-gradient(135deg, oklch(0.96 0.008 60) 0%, oklch(0.93 0.015 20) 100%);
+  --hero-text:          oklch(0.14 0.015 260);
+  --hero-text-muted:    oklch(0.42 0.012 260);
+  --hero-divider:       rgba(0, 0, 0, 0.08);
+  --hero-glass-bg:      rgba(0, 0, 0, 0.04);
+  --hero-glass-border:  rgba(0, 0, 0, 0.10);
+
   --grad-primary:   linear-gradient(135deg, #C84C3D 0%, #D46856 100%);
   --grad-accent:    linear-gradient(135deg, #E8A84A 0%, #D4824A 100%);
   --grad-cool:      linear-gradient(135deg, #4A8BE8 0%, #A064D4 100%);
@@ -148,6 +155,15 @@ html.theme-transitioning *::after {
   --text:           oklch(0.94 0.006 60);        /* warm white */
   --text-muted:     oklch(0.64 0.01 60);
   --text-light:     oklch(0.44 0.008 60);
+
+  /* Dark-mode hero stays dark */
+  --grad-hero:          linear-gradient(135deg, oklch(0.11 0.015 265) 0%, oklch(0.09 0.02 20) 100%);
+  --hero-text:          #ffffff;
+  --hero-text-muted:    rgba(255,255,255,0.72);
+  --hero-divider:       rgba(255,255,255,0.08);
+  --hero-glass-bg:      rgba(255,255,255,0.08);
+  --hero-glass-border:  rgba(255,255,255,0.18);
+
   --shadow-card: 0 4px 20px rgba(0,0,0,0.38), 0 1px 4px rgba(0,0,0,0.3);
   --shadow-sm:  0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
   --shadow-md:  0 4px 20px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.25);
@@ -707,8 +723,8 @@ textarea { resize: vertical; min-height: 120px; line-height: 1.6; }
   background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
 .page-hero-content { position: relative; z-index: 1; }
-.page-hero-title { font-size: clamp(26px,4vw,40px); font-weight: 800; color: white; margin-bottom: 10px; letter-spacing: -1px; }
-.page-hero-sub { color: rgba(255,255,255,0.65); font-size: 16px; }
+.page-hero-title { font-size: clamp(26px,4vw,40px); font-weight: 800; color: var(--hero-text); margin-bottom: 10px; letter-spacing: -1px; }
+.page-hero-sub { color: var(--hero-text-muted); font-size: 16px; }
 
 /* ─── Stats ───────────────────────────────────────────────── */
 .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; }
