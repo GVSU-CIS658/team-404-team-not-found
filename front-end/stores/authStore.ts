@@ -7,7 +7,7 @@ import {
   onAuthStateChanged,
   updateProfile,
 } from 'firebase/auth'
-import { doc, setDoc, getDoc, collection, getDocs, orderBy, query } from 'firebase/firestore'
+import { doc, setDoc, getDoc, collection, getDocs, orderBy, query, updateDoc } from 'firebase/firestore'
 import { auth, db } from '../firebase'
 import type { User } from '../types'
 
@@ -89,5 +89,15 @@ export const useAuthStore = defineStore('auth', () => {
     return snap.docs.map(d => ({ uid: d.id, ...d.data() } as User))
   }
 
-  return { user, loading, error, isAuthenticated, isOrganizer, isOwner, init, signup, login, logout, fetchAllUsers }
+  // Promote the currently signed-in attendee to an organizer in place — no
+  // need to create a second account with the same email. Organizers retain
+  // full attendee privileges, so this is a one-way "and also" upgrade.
+  async function becomeOrganizer() {
+    if (!user.value) throw new Error('You must be signed in to become an organizer.')
+    if (user.value.role === 'organizer') return // already there, no-op
+    await updateDoc(doc(db, 'users', user.value.uid), { role: 'organizer' })
+    user.value = { ...user.value, role: 'organizer' }
+  }
+
+  return { user, loading, error, isAuthenticated, isOrganizer, isOwner, init, signup, login, logout, fetchAllUsers, becomeOrganizer }
 })

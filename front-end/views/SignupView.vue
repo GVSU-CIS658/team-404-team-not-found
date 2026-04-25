@@ -21,7 +21,21 @@ async function handleSignup() {
     await authStore.signup(name.value, email.value, password.value, role.value)
     router.push('/dashboard')
   } catch (e: any) {
-    error.value = e.message.includes('already-in-use') ? 'An account with this email already exists.' : e.message
+    // If the email already has an account, sign that user in (verifies their password)
+    // and — if they picked Organizer — promote them in place. This lets a single
+    // email cover both Attendee and Organizer instead of forcing a second account.
+    if (e.message.includes('already-in-use')) {
+      try {
+        await authStore.login(email.value, password.value)
+        if (role.value === 'organizer') await authStore.becomeOrganizer()
+        router.push('/dashboard')
+        return
+      } catch (loginErr: any) {
+        error.value = 'An account with this email already exists. Sign in with your existing password to continue, or use the Sign in link below.'
+      }
+    } else {
+      error.value = e.message
+    }
   } finally {
     submitting.value = false
   }

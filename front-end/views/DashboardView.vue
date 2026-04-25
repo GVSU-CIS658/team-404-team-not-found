@@ -43,6 +43,17 @@ async function handleCancelReg(regId: string, eventId: string) {
   await regStore.cancelRegistration(regId, eventId, authStore.user!.uid)
 }
 
+const upgrading = ref(false)
+async function handleBecomeOrganizer() {
+  if (!confirm('Become an organizer? You\'ll be able to create and manage your own events while keeping all your registrations.')) return
+  upgrading.value = true
+  try {
+    await authStore.becomeOrganizer()
+  } finally {
+    upgrading.value = false
+  }
+}
+
 onMounted(async () => {
   if (authStore.user) {
     const uid = authStore.user.uid
@@ -83,6 +94,17 @@ onMounted(async () => {
 
   <div style="padding: 40px 0 80px; background: var(--bg);">
     <div class="container">
+
+      <!-- Become-an-organizer upgrade CTA (attendees only) -->
+      <div v-if="!authStore.isOrganizer && !loading" class="upgrade-card">
+        <div class="upgrade-text">
+          <div class="upgrade-title">Want to host your own events?</div>
+          <div class="upgrade-sub">Become an organizer with this same account — keep all your existing registrations and gain access to event creation.</div>
+        </div>
+        <button class="btn btn-primary" :disabled="upgrading" @click="handleBecomeOrganizer">
+          {{ upgrading ? 'Upgrading…' : 'Become an Organizer' }}
+        </button>
+      </div>
 
       <!-- Stats row -->
       <div class="dash-stats" style="margin-bottom:32px;">
@@ -484,4 +506,18 @@ onMounted(async () => {
   .attendee-table th:nth-child(3), .attendee-table td:nth-child(3),
   .attendee-table th:nth-child(5), .attendee-table td:nth-child(5) { display: none; }
 }
+
+/* Become-an-organizer upgrade card */
+.upgrade-card {
+  display: flex; align-items: center; gap: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+.upgrade-text  { flex: 1; min-width: 240px; }
+.upgrade-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.upgrade-sub   { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
 </style>
