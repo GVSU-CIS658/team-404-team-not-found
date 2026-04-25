@@ -53,7 +53,25 @@ function initials(name: string) {
     <nav class="navbar">
       <div class="nav-inner">
         <router-link to="/" class="nav-brand" @click="closeMobile">
-          <div class="brand-mark"></div>
+          <svg class="brand-mark" width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs>
+              <linearGradient id="brandGrad" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#A63A2E"/>
+                <stop offset="55%" stop-color="#C84C3D"/>
+                <stop offset="100%" stop-color="#D46856"/>
+              </linearGradient>
+            </defs>
+            <rect x="2" y="5" width="30" height="27" rx="6" fill="url(#brandGrad)"/>
+            <rect x="2" y="5" width="30" height="8" rx="6" fill="rgba(0,0,0,0.18)"/>
+            <rect x="9"  y="2" width="3" height="7" rx="1.5" fill="#7A2A22"/>
+            <rect x="22" y="2" width="3" height="7" rx="1.5" fill="#7A2A22"/>
+            <circle cx="10" cy="20" r="1.6" fill="rgba(255,255,255,0.95)"/>
+            <circle cx="17" cy="20" r="1.6" fill="rgba(255,255,255,0.95)"/>
+            <circle cx="24" cy="20" r="1.6" fill="rgba(255,255,255,0.95)"/>
+            <circle cx="10" cy="26" r="1.6" fill="rgba(255,255,255,0.55)"/>
+            <circle cx="17" cy="26" r="1.6" fill="rgba(255,255,255,0.95)"/>
+            <circle cx="24" cy="26" r="1.6" fill="rgba(255,255,255,0.55)"/>
+          </svg>
           <span class="brand-name">Schedulr</span>
         </router-link>
 
@@ -147,24 +165,14 @@ function initials(name: string) {
 
 <style scoped>
 .brand-mark {
-  width: 28px; height: 28px;
-  background: var(--grad-primary);
-  border-radius: 8px;
-  position: relative;
+  width: 34px;
+  height: 34px;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+  filter: drop-shadow(0 6px 14px rgba(200, 76, 61, 0.38));
+  transition: transform 0.35s var(--ease-bounce, cubic-bezier(0.34, 1.56, 0.64, 1));
 }
-.brand-mark::before {
-  content: ''; position: absolute;
-  inset: 7px;
-  border: 2px solid rgba(255,255,255,0.85);
-  border-radius: 3px;
-}
-.brand-mark::after {
-  content: ''; position: absolute;
-  top: 4px; left: 8px; right: 8px;
-  height: 3px; background: rgba(255,255,255,0.85);
-  border-radius: 1px;
+.nav-brand:hover .brand-mark {
+  transform: rotate(-6deg) scale(1.06);
 }
 
 /* Theme Toggle Button */
