@@ -137,14 +137,73 @@ Enforced in `firestore.rules` and re-checked in each Cloud Function.
   without network roundtrips.
 - Images are lazy-loaded on list views.
 
-## 7. Tech Stack
+## 7. Repository Layout — Frontend vs Backend
+
+The codebase is split into two clearly separated parts:
+
+### 🎨 Frontend (Vue 3 SPA) — `src/`
+```
+src/
+├── main.ts                  ← Vue app bootstrap, router & Pinia install
+├── App.vue                  ← top-level shell (navbar, theme toggle, footer)
+├── style.css                ← global design tokens (oklch palette, theme)
+├── firebase.ts              ← client SDK init (Auth, Firestore)
+│
+├── views/                   ← route-level pages
+│   ├── HomeView.vue           landing + hero + stats + CTA
+│   ├── EventsView.vue         browse / filter / search events
+│   ├── EventDetailView.vue    single event + registration modal
+│   ├── CreateEventView.vue    organizer: new event form
+│   ├── EditEventView.vue      organizer: edit existing event
+│   ├── CalendarView.vue       month grid with color-coded events
+│   ├── DashboardView.vue      attendee: my registrations
+│   ├── LoginView.vue          email/password sign-in
+│   └── SignupView.vue         attendee/organizer role pick + create
+│
+├── components/              ← reusable UI pieces
+│   └── RegistrationModal.vue  3-step ticket registration flow
+│
+├── stores/                  ← Pinia state
+│   ├── auth.ts                current user + role
+│   └── events.ts              cached events + queries
+│
+├── router/                  ← Vue Router config + auth guards
+└── types/                   ← shared TypeScript interfaces
+```
+
+### ⚙️ Backend (Firebase Cloud Functions) — `functions/`
+```
+functions/
+├── src/
+│   └── index.ts             ← all callable functions:
+│                              createEvent, deleteEvent,
+│                              registerForEvent, cancelRegistration
+├── package.json             ← node 18 deps (firebase-admin, functions)
+└── tsconfig.json            ← backend TS compilation
+```
+
+### 🔧 Shared Infrastructure (root)
+```
+firebase.json                ← hosting + functions deploy targets
+firestore.rules              ← security rules (frontend ↔ backend bridge)
+firestore.indexes.json       ← composite indexes
+.firebaserc                  ← project alias (schedulr-gvsu)
+vite.config.ts               ← frontend build config
+.env.local                   ← Firebase web config (git-ignored)
+```
+
+This separation matches the architecture diagram in §2: the **frontend
+in `src/`** owns rendering and reads, the **backend in `functions/`**
+owns authoritative writes and role checks.
+
+## 8. Tech Stack
 
 - Vue 3 (Composition API, `<script setup>`) · Vue Router · Pinia
 - TypeScript · Vite build
 - Firebase Auth · Firestore · Cloud Functions (Node 18) · Hosting
 - Design tokens: oklch color space, Outfit typeface, coral `#E8614A` primary
 
-## 8. Running Locally
+## 9. Running Locally
 
 ```bash
 npm install
@@ -155,7 +214,7 @@ cd functions && npm install && npm run build
 firebase emulators:start      # functions + firestore emulator
 ```
 
-## 9. Deploying
+## 10. Deploying
 
 ```bash
 npm run build
@@ -163,7 +222,7 @@ firebase deploy --only hosting
 firebase deploy --only functions
 ```
 
-## 10. Test Account
+## 11. Test Account
 
 ```
 Email:    demo@schedulr.app
