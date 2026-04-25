@@ -46,11 +46,18 @@ const ticketPercent = computed(() => {
   return Math.round((event.value.ticketsRemaining / event.value.ticketLimit) * 100)
 })
 
-// "% full" — what fraction has been registered (0 when nothing booked, 100 when sold out)
-const percentFull = computed(() => {
+// "% full" — fraction registered. Numeric value (0–100) used for the bar width.
+const percentFullNum = computed(() => {
   if (!event.value || !event.value.ticketLimit) return 0
   const filled = event.value.ticketLimit - event.value.ticketsRemaining
-  return Math.max(0, Math.min(100, Math.round((filled / event.value.ticketLimit) * 100)))
+  return Math.max(0, Math.min(100, (filled / event.value.ticketLimit) * 100))
+})
+
+// Display string — keeps one decimal (e.g. "0.6") and trims trailing ".0" so
+// large round numbers like "35%" stay clean. Matches the math 3/500 * 100 = 0.6.
+const percentFull = computed(() => {
+  const n = percentFullNum.value
+  return n.toFixed(1).replace(/\.0$/, '')
 })
 
 const CAT_GRADIENT: Record<string, string> = {
@@ -436,7 +443,7 @@ onMounted(async () => {
                   <span class="sp-right">{{ percentFull }}% full</span>
                 </div>
                 <div class="sidebar-progress-bar">
-                  <div class="sidebar-progress-fill" :style="{ width: percentFull + '%' }"></div>
+                  <div class="sidebar-progress-fill" :style="{ width: percentFullNum + '%' }"></div>
                 </div>
               </div>
 
