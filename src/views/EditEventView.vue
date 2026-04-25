@@ -300,7 +300,7 @@ async function handleSubmit() {
   padding: 0 0 60px;
 }
 .create-card {
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   padding: 36px 40px;

@@ -95,10 +95,6 @@ const features = [
 <template>
   <!-- ═══════════════════════════ HERO ═══════════════════════════ -->
   <section class="hero">
-    <div class="hero-glow glow-coral"></div>
-    <div class="hero-glow glow-purple"></div>
-    <div class="hero-glow glow-blue"></div>
-
     <div class="container hero-inner">
       <div class="hero-badge">
         <span class="pulse-dot"></span>
@@ -292,9 +288,9 @@ const features = [
   filter: blur(90px);
   pointer-events: none;
 }
-.glow-coral  { width: 620px; height: 620px; background: rgba(232,97,74,0.28);  top: -220px; left: 50%; transform: translateX(-50%); }
-.glow-purple { width: 440px; height: 440px; background: rgba(160,100,212,0.22); bottom: -120px; left: -120px; }
-.glow-blue   { width: 420px; height: 420px; background: rgba(74,139,232,0.18);  top: 40%; right: -140px; }
+.glow-coral  { width: 620px; height: 620px; background: rgba(232,97,74,0.14);  top: -220px; left: 50%; transform: translateX(-50%); }
+.glow-purple { width: 440px; height: 440px; background: rgba(160,100,212,0.12); bottom: -120px; left: -120px; }
+.glow-blue   { width: 420px; height: 420px; background: rgba(74,139,232,0.10);  top: 40%; right: -140px; }
 
 .hero-inner {
   position: relative;
@@ -333,7 +329,7 @@ const features = [
   font-family: 'Outfit', sans-serif;
 }
 .hero-title-gradient {
-  background: linear-gradient(135deg, #E8614A 0%, #F28974 50%, #E8A84A 100%);
+  background: linear-gradient(135deg, oklch(0.63 0.20 22), oklch(0.72 0.18 40));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -353,15 +349,15 @@ const features = [
 }
 .btn-coral {
   display: inline-flex; align-items: center; justify-content: center;
-  background: linear-gradient(135deg, #E8614A, #F28974);
+  background: var(--primary);
   color: white; font-weight: 600; font-size: 15px;
   padding: 14px 28px; border-radius: var(--radius-full);
   text-decoration: none;
-  box-shadow: 0 8px 24px rgba(232,97,74,0.40);
+  box-shadow: 0 8px 32px rgba(232,97,74,0.28);
   transition: transform .25s var(--ease), box-shadow .25s var(--ease);
   border: none;
 }
-.btn-coral:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(232,97,74,0.55); color: white; text-decoration: none; }
+.btn-coral:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(232,97,74,0.40); color: white; text-decoration: none; }
 
 .btn-glass {
   display: inline-flex; align-items: center; justify-content: center;
@@ -384,10 +380,8 @@ const features = [
 .hero-stat { text-align: center; padding: 0 40px; }
 .stat-num {
   display: block;
-  font-size: 36px; font-weight: 700;
-  background: linear-gradient(135deg, #E8614A, #F28974);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-size: 36px; font-weight: 800;
+  color: var(--primary);
   letter-spacing: -1px;
   margin-bottom: 4px;
 }

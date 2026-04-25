@@ -613,7 +613,7 @@ onMounted(async () => {
 
 /* ── Section cards ── */
 .ev-section-card {
-  background: white; border: 1px solid var(--border); border-radius: var(--radius-lg);
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
   padding: 28px; margin-bottom: 20px; box-shadow: var(--shadow-card);
 }
 .ev-section-title {
@@ -662,7 +662,7 @@ onMounted(async () => {
 /* ── Info grid ── */
 .ev-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
 .ev-info-item {
-  background: white; border: 1px solid var(--border); border-radius: var(--radius-md);
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md);
   padding: 18px; display: flex; align-items: flex-start; gap: 14px; box-shadow: var(--shadow-card);
 }
 .ev-info-icon { font-size: 22px; flex-shrink: 0; }
@@ -701,9 +701,9 @@ onMounted(async () => {
 
 /* ── Venue Picker ── */
 .venue-picker-card {
-  background: white; border: 1.5px solid var(--primary-light);
+  background: var(--surface); border: 1.5px solid var(--primary-light);
   border-radius: var(--radius-xl); padding: 24px;
-  box-shadow: 0 0 0 4px rgba(79,70,229,0.08), var(--shadow-lg);
+  box-shadow: 0 0 0 4px rgba(232,97,74,0.08), var(--shadow-lg);
   animation: fadeUp 0.25s var(--ease) both;
 }
 .venue-picker-header {
@@ -741,7 +741,7 @@ onMounted(async () => {
 /* ── Sidebar ── */
 .ev-sidebar { position: sticky; top: 88px; }
 .ev-sidebar-card {
-  background: white; border: 1px solid var(--border);
+  background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius-xl); padding: 28px; box-shadow: var(--shadow-lg);
 }
 .sidebar-tickets {

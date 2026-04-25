@@ -181,8 +181,8 @@ html.theme-transitioning *::after {
 }
 [data-theme="dark"] body {
   background:
-    radial-gradient(ellipse 60% 50% at 20% 0%, rgba(232,97,74,0.10) 0%, transparent 55%),
-    radial-gradient(ellipse 50% 40% at 85% 100%, rgba(160,100,212,0.08) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 50% at 20% 0%, rgba(232,97,74,0.05) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 85% 100%, rgba(160,100,212,0.05) 0%, transparent 55%),
     oklch(0.11 0.015 265);
   background-attachment: fixed;
 }
@@ -427,11 +427,11 @@ a:hover { text-decoration: underline; }
 .btn:hover { text-decoration: none; }
 
 .btn-primary {
-  background: var(--grad-primary);
+  background: var(--primary);
   color: white;
-  box-shadow: 0 4px 14px rgba(79,70,229,0.35);
+  box-shadow: 0 4px 16px rgba(232,97,74,0.28);
 }
-.btn-primary:hover { box-shadow: 0 8px 24px rgba(79,70,229,0.45); transform: translateY(-1px); color: white; }
+.btn-primary:hover { box-shadow: 0 8px 24px rgba(232,97,74,0.40); transform: translateY(-1px); color: white; }
 
 .btn-secondary {
   background: var(--surface);
