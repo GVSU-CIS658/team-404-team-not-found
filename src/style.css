@@ -144,8 +144,8 @@ html.theme-transitioning *::after {
 
 /* ─── Dark Theme ─────────────────────────────────────────── */
 [data-theme="dark"] {
-  /* Dark theme surfaces — exact design-file tokens */
-  --bg:             oklch(0.11 0.015 265);       /* deep navy-black */
+  /* Dark theme surfaces — warm near-black (not navy) */
+  --bg:             oklch(0.10 0.010 25);        /* warm near-black */
   --surface:        rgba(255, 255, 255, 0.06);
   --surface-2:      rgba(255, 255, 255, 0.08);
   --surface-3:      rgba(255, 255, 255, 0.12);
@@ -156,8 +156,8 @@ html.theme-transitioning *::after {
   --text-muted:     oklch(0.64 0.01 60);
   --text-light:     oklch(0.44 0.008 60);
 
-  /* Dark-mode hero stays dark */
-  --grad-hero:          linear-gradient(135deg, oklch(0.11 0.015 265) 0%, oklch(0.09 0.02 20) 100%);
+  /* Dark-mode hero — warm near-black gradient, not navy */
+  --grad-hero:          linear-gradient(135deg, oklch(0.10 0.010 25) 0%, oklch(0.07 0.015 25) 100%);
   --hero-text:          #ffffff;
   --hero-text-muted:    rgba(255,255,255,0.72);
   --hero-divider:       rgba(255,255,255,0.08);
@@ -172,12 +172,12 @@ html.theme-transitioning *::after {
 [data-theme="dark"] body {
   background:
     radial-gradient(ellipse 60% 50% at 20% 0%, rgba(200,76,61,0.10) 0%, transparent 55%),
-    radial-gradient(ellipse 50% 40% at 85% 100%, rgba(160,100,212,0.08) 0%, transparent 55%),
-    oklch(0.11 0.015 265);
+    radial-gradient(ellipse 50% 40% at 85% 100%, rgba(160,100,212,0.06) 0%, transparent 55%),
+    oklch(0.10 0.010 25);
   background-attachment: fixed;
 }
 [data-theme="dark"] .navbar {
-  background: rgba(12, 14, 28, 0.72) !important;
+  background: rgba(20, 14, 12, 0.72) !important;
   border-bottom-color: rgba(255,255,255,0.08) !important;
 }
 [data-theme="dark"] .section-white { background: var(--surface) !important; }
