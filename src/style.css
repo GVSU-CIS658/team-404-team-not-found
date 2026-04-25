@@ -43,6 +43,11 @@
   --hero-glass-bg:      rgba(0, 0, 0, 0.04);
   --hero-glass-border:  rgba(0, 0, 0, 0.10);
 
+  /* Hero badge — readable in light mode (deeper text) */
+  --badge-bg:           rgba(200, 76, 61, 0.16);
+  --badge-border:       rgba(200, 76, 61, 0.32);
+  --badge-text:         #A63A2E;
+
   --grad-primary:   linear-gradient(135deg, #C84C3D 0%, #D46856 100%);
   --grad-accent:    linear-gradient(135deg, #E8A84A 0%, #D4824A 100%);
   --grad-cool:      linear-gradient(135deg, #4A8BE8 0%, #A064D4 100%);
@@ -163,6 +168,11 @@ html.theme-transitioning *::after {
   --hero-divider:       rgba(255,255,255,0.08);
   --hero-glass-bg:      rgba(255,255,255,0.08);
   --hero-glass-border:  rgba(255,255,255,0.18);
+
+  /* Hero badge — brighter on dark surface */
+  --badge-bg:           rgba(200, 76, 61, 0.15);
+  --badge-border:       rgba(200, 76, 61, 0.38);
+  --badge-text:         #D46856;
 
   --shadow-card: 0 4px 20px rgba(0,0,0,0.38), 0 1px 4px rgba(0,0,0,0.3);
   --shadow-sm:  0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);

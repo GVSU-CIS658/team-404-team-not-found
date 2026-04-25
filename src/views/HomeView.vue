@@ -306,9 +306,9 @@ const features = [
 
 .hero-badge {
   display: inline-flex; align-items: center; gap: 10px;
-  background: rgba(200,76,61,0.14);
-  border: 1px solid rgba(200,76,61,0.35);
-  color: #D46856;
+  background: var(--badge-bg);
+  border: 1px solid var(--badge-border);
+  color: var(--badge-text);
   border-radius: var(--radius-full);
   padding: 8px 18px;
   font-size: 11px; font-weight: 700; letter-spacing: 1.4px;
