@@ -36,6 +36,16 @@ const isOwner = computed(() =>
 
 const isMultiVenue = computed(() => !!(event.value?.venues && event.value.venues.length > 0))
 
+// How many confirmed registrations the current user holds for THIS event.
+// Each registration is a separate Firestore doc, so this is a true count of
+// tickets booked — works even if the same user registers multiple times.
+const myRegistrationCount = computed(() => {
+  if (!event.value?.id) return 0
+  return regStore.userRegistrations.filter(
+    r => r.eventId === event.value!.id && r.status === 'confirmed'
+  ).length
+})
+
 const selectedVenue = computed<Venue | null>(() => {
   if (!selectedVenueId.value || !event.value?.venues) return null
   return event.value.venues.find(v => v.id === selectedVenueId.value) || null
@@ -130,13 +140,22 @@ async function onRegistrationDone() {
 }
 
 async function handleCancel() {
-  const reg = userRegistration.value || regStore.userRegistrations.find(r => r.eventId === event.value!.id)
-  if (!reg || !authStore.user) return
+  // Cancel the most-recent confirmed registration for this event. Other
+  // registrations the user holds for the same event remain active — they
+  // can be cancelled individually from the dashboard.
+  if (!authStore.user || !event.value?.id) return
+  const eid = event.value.id
+  const myRegs = regStore.userRegistrations.filter(r => r.eventId === eid && r.status === 'confirmed')
+  if (myRegs.length === 0) return
+  // Pick the most-recent (registeredAt is a Date)
+  const reg = [...myRegs].sort((a, b) => +b.registeredAt - +a.registeredAt)[0]
   cancelling.value = true
   try {
-    await regStore.cancelRegistration(reg.id!, event.value!.id!, authStore.user.uid, reg.venueId)
-    isRegistered.value = false
-    userRegistration.value = null
+    await regStore.cancelRegistration(reg.id!, eid, authStore.user.uid, reg.venueId)
+    // After cancel, refresh derived state from the now-updated store.
+    const remaining = regStore.userRegistrations.filter(r => r.eventId === eid && r.status === 'confirmed')
+    isRegistered.value = remaining.length > 0
+    userRegistration.value = remaining[0] || null
     event.value = await eventStore.fetchEvent(route.params.id as string)
   } finally {
     cancelling.value = false
@@ -457,16 +476,30 @@ onMounted(async () => {
               <!-- Registration actions -->
               <template v-if="isRegistered">
                 <div class="alert alert-success" style="margin-bottom:14px;">
-                  🎉 You're registered! See you there.
+                  🎉 You're registered ({{ myRegistrationCount }} ticket{{ myRegistrationCount === 1 ? '' : 's' }})! See you there.
                 </div>
+                <!-- Allow registering for additional tickets — each click adds a new
+                     registration entry visible separately on the dashboard. -->
+                <button
+                  v-if="event.ticketsRemaining > 0"
+                  @click="initiateRegister"
+                  class="btn btn-primary btn-lg"
+                  style="width:100%;margin-bottom:10px;"
+                  :disabled="registering"
+                >
+                  {{ registering ? 'Registering…' : 'Register Another Ticket' }}
+                </button>
                 <button
                   @click="handleCancel"
                   class="btn btn-danger btn-lg"
                   style="width:100%;margin-bottom:12px;"
                   :disabled="cancelling"
                 >
-                  {{ cancelling ? 'Cancelling…' : 'Cancel Registration' }}
+                  {{ cancelling ? 'Cancelling…' : (myRegistrationCount > 1 ? 'Cancel One Registration' : 'Cancel Registration') }}
                 </button>
+                <p v-if="myRegistrationCount > 1" style="font-size:12px;color:var(--text-muted);text-align:center;margin-bottom:12px;">
+                  You can manage individual registrations from your <router-link to="/dashboard" class="text-link">dashboard</router-link>.
+                </p>
               </template>
 
               <template v-else-if="event.ticketsRemaining > 0">
