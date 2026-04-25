@@ -34,8 +34,10 @@ const router = createRouter({
     {
       path: '/create-event',
       name: 'CreateEvent',
-      component: () => import('../views/CreateEventView.vue'),
-      meta: { requiresAuth: true, requiresOrganizer: true },
+      // Create-event is now an inline form on the Dashboard. Keep the route
+      // for back-compat and external links, but bounce users to the dashboard
+      // with the form auto-opened.
+      redirect: { name: 'Dashboard', query: { new: '1' } },
     },
     {
       path: '/edit-event/:id',
