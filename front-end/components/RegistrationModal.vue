@@ -57,6 +57,15 @@ function fmtExp(e: Event | any) {
 function inc() { qty.value = Math.min(props.event.ticketsRemaining, qty.value + 1) }
 function dec() { qty.value = Math.max(1, qty.value - 1) }
 
+// Timebox the registration round-trip so the "Processing…" spinner can never
+// hang on a stalled Firestore connection — surface a real error after 20s.
+function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label} timed out — please check your connection and try again.`)), ms)
+    p.then(v => { clearTimeout(t); resolve(v) }, e => { clearTimeout(t); reject(e) })
+  })
+}
+
 async function confirm() {
   if (price > 0 && (!cName.value || !cardNum.value || !expiry.value || !cvv.value)) {
     err.value = 'Please fill in all payment fields.'
@@ -65,16 +74,21 @@ async function confirm() {
   loading.value = true
   err.value = ''
   try {
-    await regStore.registerForEvent(
-      authStore.user!.uid,
-      authStore.user!.name,
-      props.event.id!,
-      props.event.title,
-      props.venueId,
-      props.venueName,
-      props.venueAddress,
+    await withTimeout(
+      regStore.registerForEvent(
+        authStore.user!.uid,
+        authStore.user!.name,
+        props.event.id!,
+        props.event.title,
+        props.venueId,
+        props.venueName,
+        props.venueAddress,
+      ),
+      20000,
+      'Registration',
     )
-    await eventStore.fetchEvent(props.event.id!)
+    // Refresh the event in the background — don't block the success state on it.
+    eventStore.fetchEvent(props.event.id!).catch(() => {})
     step.value = 3
   } catch (e: any) {
     err.value = e.message || 'Registration failed.'
