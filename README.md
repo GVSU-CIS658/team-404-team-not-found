@@ -141,9 +141,9 @@ Enforced in `firestore.rules` and re-checked in each Cloud Function.
 
 The codebase is split into two clearly separated parts:
 
-### Frontend (Vue 3 SPA) — `src/`
+### Frontend (Vue 3 SPA) — `front-end/`
 ```
-src/
+front-end/
 ├── main.ts                  ← Vue app bootstrap, router & Pinia install
 ├── App.vue                  ← top-level shell (navbar, theme toggle, footer)
 ├── style.css                ← global design tokens (oklch palette, theme)
@@ -171,9 +171,9 @@ src/
 └── types/                   ← shared TypeScript interfaces
 ```
 
-### Backend (Firebase Cloud Functions) — `functions/`
+### Backend (Firebase Cloud Functions) — `back-end/`
 ```
-functions/
+back-end/
 ├── src/
 │   └── index.ts             ← all callable functions:
 │                              createEvent, deleteEvent,
@@ -193,7 +193,7 @@ vite.config.ts               ← frontend build config
 ```
 
 This separation matches the architecture diagram in §2: the **frontend
-in `src/`** owns rendering and reads, the **backend in `functions/`**
+in `front-end/`** owns rendering and reads, the **backend in `back-end/`**
 owns authoritative writes and role checks.
 
 ## 8. Tech Stack
@@ -210,7 +210,7 @@ npm install
 cp .env.example .env.local    # add your Firebase web config
 npm run dev                   # frontend on http://localhost:5173
 
-cd functions && npm install && npm run build
+cd back-end && npm install && npm run build
 firebase emulators:start      # functions + firestore emulator
 ```
 

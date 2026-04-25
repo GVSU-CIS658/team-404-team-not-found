@@ -418,6 +418,15 @@ onMounted(async () => {
                   <strong>{{ event.ticketsRemaining }}</strong>
                   <span> / {{ event.ticketLimit }} remaining</span>
                 </div>
+
+                <!-- Inline % full progress -->
+                <div class="sidebar-progress-row">
+                  <span class="sp-left">{{ event.ticketsRemaining }} / {{ event.ticketLimit }} remaining</span>
+                  <span class="sp-right">{{ 100 - ticketProgress }}% full</span>
+                </div>
+                <div class="sidebar-progress-bar">
+                  <div class="sidebar-progress-fill" :style="{ width: (100 - ticketProgress) + '%' }"></div>
+                </div>
               </div>
 
               <div v-if="regError" class="alert alert-error" style="margin-bottom:16px;">⚠️ {{ regError }}</div>
@@ -451,7 +460,7 @@ onMounted(async () => {
                 >
                   <span v-if="registering">⏳ Registering…</span>
                   <span v-else-if="isMultiVenue">🏟️ Choose Venue &amp; Register</span>
-                  <span v-else>🎟️ Register Now — Free</span>
+                  <span v-else>Register Now — Free</span>
                 </button>
                 <p v-if="!authStore.isAuthenticated" style="font-size:12px;color:var(--text-muted);text-align:center;margin-bottom:12px;">
                   You'll be asked to sign in or create an account
@@ -680,6 +689,23 @@ onMounted(async () => {
   height: 8px; background: var(--surface-2); border-radius: var(--radius-full); overflow: hidden;
 }
 .ticket-progress-fill { height: 100%; border-radius: var(--radius-full); transition: width 0.8s var(--ease); }
+
+/* Sidebar inline % progress */
+.sidebar-progress-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-top: 14px; margin-bottom: 8px;
+  font-size: 13px;
+}
+.sp-left  { color: var(--text-muted); font-weight: 500; }
+.sp-right { color: var(--text); font-weight: 700; }
+.sidebar-progress-bar {
+  height: 8px; background: var(--surface-2);
+  border-radius: var(--radius-full); overflow: hidden;
+}
+.sidebar-progress-fill {
+  height: 100%; background: var(--primary);
+  border-radius: var(--radius-full); transition: width 0.8s var(--ease);
+}
 .attendee-list { display: flex; flex-direction: column; gap: 2px; margin-top: 12px; }
 .attendee-row {
   display: flex; align-items: center; gap: 12px; padding: 10px 12px;
