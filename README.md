@@ -3,6 +3,7 @@
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/d7M8Pab7)
 
 **Live app:** https://schedulr-gvsu.web.app
+**Repository:** https://github.com/GVSU-CIS658/team-404-team-not-found
 **Course:** GVSU CIS 658 — Web Application Programming (Winter 2026)
 **Team:** 404 Team Not Found
 - Rajeshwari Galugu — Frontend development and calendar integration
