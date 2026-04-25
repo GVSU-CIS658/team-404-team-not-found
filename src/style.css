@@ -8,18 +8,18 @@
 /* ─── Design Tokens ─────────────────────────────────────── */
 :root, [data-theme="light"] {
   /* Brand — exact design-file oklch palette */
-  --primary:        oklch(0.56 0.19 25);        /* deep red-coral */
-  --primary-dark:   oklch(0.46 0.20 25);
-  --primary-light:  oklch(0.68 0.15 25);
+  --primary:        oklch(0.63 0.20 22);        /* design-ref coral ≈ #E8614A */
+  --primary-dark:   oklch(0.52 0.22 22);
+  --primary-light:  oklch(0.74 0.16 22);
   --accent:         #E8A84A;
   --accent-dark:    #D4824A;
   --mint:           #4A9E6A;
   --success:        #4A9E6A;
-  --danger:         #C84C3D;
+  --danger:         #E8614A;
   --warning:        #E8A84A;
   --info:           #4A8BE8;
-  --coral-glow:     rgba(200, 76, 61, 0.28);
-  --coral-subtle:   rgba(200, 76, 61, 0.12);
+  --coral-glow:     rgba(232, 97, 74, 0.28);
+  --coral-subtle:   rgba(232, 97, 74, 0.12);
 
   /* Light theme surfaces — exact design-file tokens */
   --bg:             oklch(0.96 0.008 60);
@@ -44,21 +44,21 @@
   --hero-glass-border:  rgba(0, 0, 0, 0.10);
 
   /* Hero badge — readable in light mode (deeper text) */
-  --badge-bg:           rgba(200, 76, 61, 0.16);
-  --badge-border:       rgba(200, 76, 61, 0.32);
-  --badge-text:         #A63A2E;
+  --badge-bg:           rgba(232, 97, 74, 0.14);
+  --badge-border:       rgba(232, 97, 74, 0.32);
+  --badge-text:         var(--primary-dark);
 
-  --grad-primary:   linear-gradient(135deg, #C84C3D 0%, #D46856 100%);
+  --grad-primary:   linear-gradient(135deg, #E8614A 0%, #F28974 100%);
   --grad-accent:    linear-gradient(135deg, #E8A84A 0%, #D4824A 100%);
   --grad-cool:      linear-gradient(135deg, #4A8BE8 0%, #A064D4 100%);
-  --grad-warm:      linear-gradient(135deg, #C84C3D 0%, #E8A84A 100%);
+  --grad-warm:      linear-gradient(135deg, #E8614A 0%, #E8A84A 100%);
   --grad-green:     linear-gradient(135deg, #4A9E6A 0%, #6BB380 100%);
 
   --shadow-sm:  0 1px 3px rgba(60,30,15,0.06), 0 1px 2px rgba(60,30,15,0.04);
   --shadow-md:  0 4px 20px rgba(60,30,15,0.08), 0 2px 8px rgba(60,30,15,0.04);
   --shadow-lg:  0 20px 48px rgba(60,30,15,0.10), 0 8px 20px rgba(60,30,15,0.06);
   --shadow-xl:  0 40px 80px rgba(60,30,15,0.12), 0 16px 40px rgba(60,30,15,0.08);
-  --shadow-glow: 0 8px 32px rgba(200, 76, 61, 0.28);
+  --shadow-glow: 0 8px 32px rgba(232, 97, 74, 0.28);
   --shadow-card: 0 4px 20px rgba(60,30,15,0.08), 0 1px 4px rgba(60,30,15,0.04);
 
   --radius-xs:  6px;
@@ -131,7 +131,7 @@ html { scroll-behavior: smooth; }
 body {
   font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background:
-    radial-gradient(ellipse 80% 50% at 20% 0%, rgba(200,76,61,0.10) 0%, transparent 50%),
+    radial-gradient(ellipse 80% 50% at 20% 0%, rgba(232,97,74,0.10) 0%, transparent 50%),
     radial-gradient(ellipse 60% 40% at 85% 100%, rgba(160,100,212,0.06) 0%, transparent 55%),
     var(--bg);
   background-attachment: fixed;
@@ -149,8 +149,8 @@ html.theme-transitioning *::after {
 
 /* ─── Dark Theme ─────────────────────────────────────────── */
 [data-theme="dark"] {
-  /* Dark theme surfaces — warm near-black (not navy) */
-  --bg:             oklch(0.10 0.010 25);        /* warm near-black */
+  /* Dark theme surfaces — design-reference deep navy-black */
+  --bg:             oklch(0.11 0.015 265);       /* deep navy-black */
   --surface:        rgba(255, 255, 255, 0.06);
   --surface-2:      rgba(255, 255, 255, 0.08);
   --surface-3:      rgba(255, 255, 255, 0.12);
@@ -161,8 +161,8 @@ html.theme-transitioning *::after {
   --text-muted:     oklch(0.64 0.01 60);
   --text-light:     oklch(0.44 0.008 60);
 
-  /* Dark-mode hero — warm near-black gradient, not navy */
-  --grad-hero:          linear-gradient(135deg, oklch(0.10 0.010 25) 0%, oklch(0.07 0.015 25) 100%);
+  /* Dark-mode hero — design-reference navy gradient */
+  --grad-hero:          linear-gradient(135deg, oklch(0.11 0.015 265) 0%, oklch(0.09 0.02 20) 100%);
   --hero-text:          #ffffff;
   --hero-text-muted:    rgba(255,255,255,0.72);
   --hero-divider:       rgba(255,255,255,0.08);
@@ -170,9 +170,9 @@ html.theme-transitioning *::after {
   --hero-glass-border:  rgba(255,255,255,0.18);
 
   /* Hero badge — brighter on dark surface */
-  --badge-bg:           rgba(200, 76, 61, 0.15);
-  --badge-border:       rgba(200, 76, 61, 0.38);
-  --badge-text:         #D46856;
+  --badge-bg:           rgba(232, 97, 74, 0.15);
+  --badge-border:       rgba(232, 97, 74, 0.38);
+  --badge-text:         #F28974;
 
   --shadow-card: 0 4px 20px rgba(0,0,0,0.38), 0 1px 4px rgba(0,0,0,0.3);
   --shadow-sm:  0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
@@ -181,13 +181,13 @@ html.theme-transitioning *::after {
 }
 [data-theme="dark"] body {
   background:
-    radial-gradient(ellipse 60% 50% at 20% 0%, rgba(200,76,61,0.10) 0%, transparent 55%),
-    radial-gradient(ellipse 50% 40% at 85% 100%, rgba(160,100,212,0.06) 0%, transparent 55%),
-    oklch(0.10 0.010 25);
+    radial-gradient(ellipse 60% 50% at 20% 0%, rgba(232,97,74,0.10) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 85% 100%, rgba(160,100,212,0.08) 0%, transparent 55%),
+    oklch(0.11 0.015 265);
   background-attachment: fixed;
 }
 [data-theme="dark"] .navbar {
-  background: rgba(20, 14, 12, 0.72) !important;
+  background: rgba(12, 14, 28, 0.72) !important;
   border-bottom-color: rgba(255,255,255,0.08) !important;
 }
 [data-theme="dark"] .section-white { background: var(--surface) !important; }

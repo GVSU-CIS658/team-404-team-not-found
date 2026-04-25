@@ -50,7 +50,7 @@ const upcomingEvents = computed(() =>
 const CAT_COLORS: Record<string, string> = {
   'Music':        '#A064D4',
   'Food & Drink': '#D4824A',
-  'Arts':         '#C84C3D',
+  'Arts':         '#E8614A',
   'Sports':       '#4A8BE8',
   'Community':    '#4A9E6A',
   'Education':    '#E8A84A',
@@ -83,12 +83,12 @@ const categories = [
 ]
 
 const features = [
-  { title: 'Easy Registration',     grad: 'linear-gradient(135deg,#C84C3D,#D46856)', text: 'Register for any event in one click. Real-time ticket availability so you never miss limited spots.' },
+  { title: 'Easy Registration',     grad: 'linear-gradient(135deg,#E8614A,#F28974)', text: 'Register for any event in one click. Real-time ticket availability so you never miss limited spots.' },
   { title: 'Calendar View',         grad: 'linear-gradient(135deg,#E8A84A,#F2C078)', text: 'Visual monthly calendar showing all Grand Rapids events. Never double-book again.' },
   { title: 'Google Calendar Sync',  grad: 'linear-gradient(135deg,#4A9E6A,#6ABF8A)', text: 'Add any event directly to your Google Calendar with one tap. Stay organized everywhere.' },
   { title: 'Organizer Dashboard',   grad: 'linear-gradient(135deg,#A064D4,#C48EE8)', text: 'Create events with flyer photos, manage ticket capacity, and track registrations easily.' },
   { title: 'Secure & Reliable',     grad: 'linear-gradient(135deg,#4A8BE8,#78AEF2)', text: 'Powered by Firebase with role-based access control. Your data is always safe and accurate.' },
-  { title: 'Grand Rapids Focused',  grad: 'linear-gradient(135deg,#C84C3D,#E8A84A)', text: 'Curated for West Michigan — from ArtPrize to Founders, from GVSU to downtown GR.' },
+  { title: 'Grand Rapids Focused',  grad: 'linear-gradient(135deg,#E8614A,#E8A84A)', text: 'Curated for West Michigan — from ArtPrize to Founders, from GVSU to downtown GR.' },
 ]
 </script>
 
@@ -205,7 +205,7 @@ const features = [
                 <div
                   class="ue-progress-fill"
                   :class="{ hot: pctFilled(event) >= 80 }"
-                  :style="{ width: pctFilled(event) + '%', background: pctFilled(event) >= 80 ? 'linear-gradient(90deg,#C84C3D,#D46856)' : catColor(event.category) }"
+                  :style="{ width: pctFilled(event) + '%', background: pctFilled(event) >= 80 ? 'linear-gradient(90deg,#E8614A,#F28974)' : catColor(event.category) }"
                 ></div>
               </div>
               <div class="ue-progress-lbl">
@@ -292,7 +292,7 @@ const features = [
   filter: blur(90px);
   pointer-events: none;
 }
-.glow-coral  { width: 620px; height: 620px; background: rgba(200,76,61,0.28);  top: -220px; left: 50%; transform: translateX(-50%); }
+.glow-coral  { width: 620px; height: 620px; background: rgba(232,97,74,0.28);  top: -220px; left: 50%; transform: translateX(-50%); }
 .glow-purple { width: 440px; height: 440px; background: rgba(160,100,212,0.22); bottom: -120px; left: -120px; }
 .glow-blue   { width: 420px; height: 420px; background: rgba(74,139,232,0.18);  top: 40%; right: -140px; }
 
@@ -317,8 +317,8 @@ const features = [
 }
 .pulse-dot {
   width: 8px; height: 8px; border-radius: 50%;
-  background: #C84C3D;
-  box-shadow: 0 0 0 0 rgba(200,76,61,0.6);
+  background: #E8614A;
+  box-shadow: 0 0 0 0 rgba(232,97,74,0.6);
   animation: pulse-ring 2s ease-out infinite;
   flex-shrink: 0;
 }
@@ -333,7 +333,7 @@ const features = [
   font-family: 'Outfit', sans-serif;
 }
 .hero-title-gradient {
-  background: linear-gradient(135deg, #C84C3D 0%, #D46856 50%, #E8A84A 100%);
+  background: linear-gradient(135deg, #E8614A 0%, #F28974 50%, #E8A84A 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -353,15 +353,15 @@ const features = [
 }
 .btn-coral {
   display: inline-flex; align-items: center; justify-content: center;
-  background: linear-gradient(135deg, #C84C3D, #D46856);
+  background: linear-gradient(135deg, #E8614A, #F28974);
   color: white; font-weight: 600; font-size: 15px;
   padding: 14px 28px; border-radius: var(--radius-full);
   text-decoration: none;
-  box-shadow: 0 8px 24px rgba(200,76,61,0.40);
+  box-shadow: 0 8px 24px rgba(232,97,74,0.40);
   transition: transform .25s var(--ease), box-shadow .25s var(--ease);
   border: none;
 }
-.btn-coral:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(200,76,61,0.55); color: white; text-decoration: none; }
+.btn-coral:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(232,97,74,0.55); color: white; text-decoration: none; }
 
 .btn-glass {
   display: inline-flex; align-items: center; justify-content: center;
@@ -385,7 +385,7 @@ const features = [
 .stat-num {
   display: block;
   font-size: 36px; font-weight: 700;
-  background: linear-gradient(135deg, #C84C3D, #D46856);
+  background: linear-gradient(135deg, #E8614A, #F28974);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text;
   letter-spacing: -1px;
@@ -529,7 +529,7 @@ const features = [
 .cat-card:hover::before { opacity:1; }
 .cat-card:hover .cat-name, .cat-card:hover .cat-arr { color:white; }
 .cat-card:hover .cat-arr { opacity:1; }
-.cat-dot { width: 14px; height: 14px; border-radius: 50%; position:relative; z-index:1; box-shadow: 0 0 0 6px rgba(200,76,61,0.08); }
+.cat-dot { width: 14px; height: 14px; border-radius: 50%; position:relative; z-index:1; box-shadow: 0 0 0 6px rgba(232,97,74,0.08); }
 .cat-card:hover .cat-dot { box-shadow: 0 0 0 6px rgba(255,255,255,0.25); background: white !important; }
 .cat-name { font-size: 12px; font-weight:700; color:var(--text); position:relative; z-index:1; transition:var(--transition); text-align:center; }
 .cat-arr  { font-size: 16px; color:var(--text-light); opacity:0; transition:var(--transition); position:relative; z-index:1; }
@@ -542,7 +542,7 @@ const features = [
   border: 1px solid var(--border); border-radius: var(--radius-lg);
   transition: var(--transition);
 }
-.feat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: rgba(200,76,61,0.25); }
+.feat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: rgba(232,97,74,0.25); }
 .feat-icon {
   width: 48px; height: 48px; border-radius: 12px;
   margin-bottom: 18px;
@@ -554,7 +554,7 @@ const features = [
 /* ─── CTA ─────────────────────────────────── */
 .cta-sec { background: var(--grad-hero); padding: 96px 0; text-align: center; position: relative; overflow: hidden; }
 .cta-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.25; pointer-events: none; }
-.cb1 { width: 500px; height: 500px; background: #C84C3D; top: -150px; right: -100px; }
+.cb1 { width: 500px; height: 500px; background: #E8614A; top: -150px; right: -100px; }
 .cb2 { width: 400px; height: 400px; background: #A064D4; bottom: -100px; left: -80px; }
 .cta-title { font-size: clamp(28px,4vw,48px); font-weight: 800; color: var(--hero-text); margin-bottom: 16px; letter-spacing: -1.5px; }
 .cta-sub   { font-size: 17px; color: var(--hero-text-muted); margin-bottom: 40px; }

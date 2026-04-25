@@ -24,7 +24,7 @@ const firstDayOfWeek = computed(() =>
 const CAT_COLORS: Record<string, string> = {
   'Music':        '#A064D4',
   'Food & Drink': '#D4824A',
-  'Arts':         '#C84C3D',
+  'Arts':         '#E8614A',
   'Sports':       '#4A8BE8',
   'Community':    '#4A9E6A',
   'Education':    '#E8A84A',
