@@ -377,54 +377,60 @@ watch(() => route.query.new, v => { if (v === '1') showCreateForm.value = true }
         </form>
       </div>
 
-      <!-- Empty state -->
-      <div v-else-if="!loading && myEvents.length === 0" class="empty-card">
-        <div class="empty-cal">📅</div>
-        <h3 class="empty-title">No events yet</h3>
-        <p class="empty-text">Create your first event to get started</p>
-        <button class="btn btn-primary btn-lg" @click="openCreateForm">+ Create Event</button>
-      </div>
-
-      <!-- Events list -->
-      <div v-else-if="!loading">
-        <div class="org-section-head">
-          <h2 class="org-section-title">My Events</h2>
+      <!-- All non-form sections render below; My Registrations renders even when
+           the organizer hasn't created any events of their own. -->
+      <template v-else-if="!loading">
+        <!-- Events: empty state or list -->
+        <div v-if="myEvents.length === 0" class="empty-card">
+          <div class="empty-cal">📅</div>
+          <h3 class="empty-title">No events yet</h3>
+          <p class="empty-text">Create your first event to get started</p>
+          <button class="btn btn-primary btn-lg" @click="openCreateForm">+ Create Event</button>
         </div>
-        <div class="dash-list">
-          <div v-for="ev in myEvents" :key="ev.id" class="dash-list-item">
-            <div class="dli-img-wrap">
-              <img v-if="ev.flyerURL && !ev.flyerURL.startsWith('data:')" :src="ev.flyerURL" :alt="ev.title" />
-              <img v-else-if="ev.flyerURL" :src="ev.flyerURL" :alt="ev.title" />
-              <div v-else class="dli-img-placeholder">{{ ev.category?.[0]?.toUpperCase() || 'E' }}</div>
-            </div>
-            <div class="dli-info">
-              <router-link :to="`/events/${ev.id}`" class="dli-title">{{ ev.title }}</router-link>
-              <div class="dli-meta">{{ fmt(ev.dateTime) }} · {{ fmtTime(ev.dateTime) }}</div>
-              <div class="dli-ticket-bar-wrap">
-                <div class="dli-ticket-bar">
-                  <div
-                    class="dli-ticket-fill"
-                    :style="{ width: `${Math.round(((ev.ticketLimit - ev.ticketsRemaining) / Math.max(1, ev.ticketLimit)) * 100)}%` }"
-                  ></div>
-                </div>
-                <span class="dli-ticket-text">
-                  {{ ev.ticketLimit - ev.ticketsRemaining }} / {{ ev.ticketLimit }} registered
-                </span>
-              </div>
-            </div>
-            <div class="dli-actions">
-              <router-link :to="`/events/${ev.id}`" class="btn btn-secondary btn-sm">View</router-link>
-              <router-link :to="`/edit-event/${ev.id}`" class="btn btn-secondary btn-sm">Edit</router-link>
-            </div>
-          </div>
-        </div>
-
-        <!-- My registrations (organizer might also be an attendee elsewhere) -->
-        <div v-if="regStore.userRegistrations.length > 0" class="extra-section">
+        <div v-else>
           <div class="org-section-head">
-            <h2 class="org-section-title">My Registrations</h2>
+            <h2 class="org-section-title">My Events</h2>
           </div>
           <div class="dash-list">
+            <div v-for="ev in myEvents" :key="ev.id" class="dash-list-item">
+              <div class="dli-img-wrap">
+                <img v-if="ev.flyerURL && !ev.flyerURL.startsWith('data:')" :src="ev.flyerURL" :alt="ev.title" />
+                <img v-else-if="ev.flyerURL" :src="ev.flyerURL" :alt="ev.title" />
+                <div v-else class="dli-img-placeholder">{{ ev.category?.[0]?.toUpperCase() || 'E' }}</div>
+              </div>
+              <div class="dli-info">
+                <router-link :to="`/events/${ev.id}`" class="dli-title">{{ ev.title }}</router-link>
+                <div class="dli-meta">{{ fmt(ev.dateTime) }} · {{ fmtTime(ev.dateTime) }}</div>
+                <div class="dli-ticket-bar-wrap">
+                  <div class="dli-ticket-bar">
+                    <div
+                      class="dli-ticket-fill"
+                      :style="{ width: `${Math.round(((ev.ticketLimit - ev.ticketsRemaining) / Math.max(1, ev.ticketLimit)) * 100)}%` }"
+                    ></div>
+                  </div>
+                  <span class="dli-ticket-text">
+                    {{ ev.ticketLimit - ev.ticketsRemaining }} / {{ ev.ticketLimit }} registered
+                  </span>
+                </div>
+              </div>
+              <div class="dli-actions">
+                <router-link :to="`/events/${ev.id}`" class="btn btn-secondary btn-sm">View</router-link>
+                <router-link :to="`/edit-event/${ev.id}`" class="btn btn-secondary btn-sm">Edit</router-link>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- My Registrations — independent of whether the organizer has events. -->
+        <div class="extra-section">
+          <div class="org-section-head">
+            <h2 class="org-section-title">My Registrations</h2>
+            <span class="badge badge-primary">{{ regStore.userRegistrations.length }}</span>
+          </div>
+          <div v-if="regStore.userRegistrations.length === 0" class="empty-state-small">
+            <p>You haven't registered for any events yet. <router-link to="/events" class="text-link">Browse events →</router-link></p>
+          </div>
+          <div v-else class="dash-list">
             <div v-for="reg in regStore.userRegistrations" :key="reg.id" class="dash-list-item">
               <div class="dli-accent-bar"></div>
               <div class="dli-info">
@@ -439,8 +445,8 @@ watch(() => route.query.new, v => { if (v === '1') showCreateForm.value = true }
           </div>
         </div>
 
-        <!-- Event attendees expandable -->
-        <div class="extra-section">
+        <!-- Event attendees expandable — only when organizer has events -->
+        <div v-if="myEvents.length > 0" class="extra-section">
           <div class="org-section-head">
             <h2 class="org-section-title">Event Attendees</h2>
           </div>
@@ -530,7 +536,7 @@ watch(() => route.query.new, v => { if (v === '1') showCreateForm.value = true }
             </tbody>
           </table>
         </div>
-      </div>
+      </template>
 
       <div v-if="loading" class="loading-wrap"><div class="spinner"></div></div>
     </div>
@@ -648,6 +654,17 @@ watch(() => route.query.new, v => { if (v === '1') showCreateForm.value = true }
 .empty-cal   { font-size: 56px; margin-bottom: 16px; opacity: 0.85; }
 .empty-card .empty-title { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
 .empty-card .empty-text  { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; }
+
+.empty-state-small {
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+.text-link { color: var(--primary); font-weight: 700; }
 
 /* Section heads */
 .org-section-head {
