@@ -258,8 +258,6 @@ const features = [
 
   <!-- ═══════════════════════════════ CTA ════════════════════════ -->
   <section class="cta-sec">
-    <div class="cta-blob cb1"></div>
-    <div class="cta-blob cb2"></div>
     <div class="container" style="position:relative;z-index:1;text-align:center">
       <h2 class="cta-title">Ready to Experience Grand Rapids?</h2>
       <p class="cta-sub">Join hundreds of locals discovering events in West Michigan.</p>
@@ -546,12 +544,9 @@ const features = [
 .feat-text  { font-size: 14px; color: var(--text-muted); line-height: 1.7; }
 
 /* ─── CTA ─────────────────────────────────── */
-.cta-sec { background: var(--grad-hero); padding: 96px 0; text-align: center; position: relative; overflow: hidden; }
-.cta-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.25; pointer-events: none; }
-.cb1 { width: 500px; height: 500px; background: #E8614A; top: -150px; right: -100px; }
-.cb2 { width: 400px; height: 400px; background: #A064D4; bottom: -100px; left: -80px; }
-.cta-title { font-size: clamp(28px,4vw,48px); font-weight: 800; color: var(--hero-text); margin-bottom: 16px; letter-spacing: -1.5px; }
-.cta-sub   { font-size: 17px; color: var(--hero-text-muted); margin-bottom: 40px; }
+.cta-sec { background: var(--bg); padding: 96px 0; text-align: center; position: relative; overflow: hidden; }
+.cta-title { font-size: clamp(28px,4vw,48px); font-weight: 800; color: var(--text); margin-bottom: 16px; letter-spacing: -1.5px; }
+.cta-sub   { font-size: 17px; color: var(--text-muted); margin-bottom: 40px; }
 
 /* ─── Responsive ──────────────────────────── */
 @media (max-width: 1024px) {
