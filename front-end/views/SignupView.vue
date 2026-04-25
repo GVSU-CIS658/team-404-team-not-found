@@ -30,46 +30,35 @@ async function handleSignup() {
 
 <template>
   <div class="auth-page">
-    <div class="auth-bg-blob" style="width:500px;height:500px;background:#7c3aed;top:-200px;left:-150px;"></div>
-    <div class="auth-bg-blob" style="width:350px;height:350px;background:#4f46e5;bottom:-100px;right:-80px;animation-delay:-4s;"></div>
-
     <div class="auth-card">
-      <div style="text-align:center; margin-bottom:32px;">
-        <div class="auth-icon">✨</div>
-        <h1 style="font-size:26px;font-weight:800;letter-spacing:-0.5px;margin-bottom:6px;">Create your account</h1>
-        <p style="color:var(--text-muted);font-size:14px;">Join Schedulr — free forever</p>
+      <div class="auth-head">
+        <div class="auth-brand">Schedulr</div>
+        <h1 class="auth-title">Create your account</h1>
+        <p class="auth-sub">Start discovering Grand Rapids events</p>
       </div>
 
-      <!-- Role selector cards -->
-      <div class="role-cards">
+      <!-- Pill role toggle -->
+      <div class="role-toggle">
         <button
           type="button"
-          class="role-card"
+          class="role-pill"
           :class="{ active: role === 'user' }"
           @click="role = 'user'"
-        >
-          <span class="role-emoji">🎟️</span>
-          <div class="role-label">Attendee</div>
-          <div class="role-desc">Browse & register for events</div>
-        </button>
+        >Attendee</button>
         <button
           type="button"
-          class="role-card"
+          class="role-pill"
           :class="{ active: role === 'organizer' }"
           @click="role = 'organizer'"
-        >
-          <span class="role-emoji">✨</span>
-          <div class="role-label">Organizer</div>
-          <div class="role-desc">Create & manage events</div>
-        </button>
+        >Organizer</button>
       </div>
 
-      <div v-if="error" class="alert alert-error">⚠️ {{ error }}</div>
+      <div v-if="error" class="alert alert-error">{{ error }}</div>
 
       <form @submit.prevent="handleSignup">
         <div class="form-group">
-          <label>Full Name</label>
-          <input v-model="name" type="text" placeholder="Your full name" required autocomplete="name" />
+          <label>Full name</label>
+          <input v-model="name" type="text" placeholder="Alex Rivera" required autocomplete="name" />
         </div>
         <div class="form-group">
           <label>Email address</label>
@@ -77,46 +66,70 @@ async function handleSignup() {
         </div>
         <div class="form-group">
           <label>Password</label>
-          <input v-model="password" type="password" placeholder="At least 6 characters" required autocomplete="new-password" />
-          <div class="form-hint">Minimum 6 characters</div>
+          <input v-model="password" type="password" placeholder="••••••••" required autocomplete="new-password" />
         </div>
-        <button type="submit" class="btn btn-primary btn-lg" style="width:100%;margin-top:8px;" :disabled="submitting">
-          <span v-if="submitting">Creating account…</span>
-          <span v-else>Create Account →</span>
+        <button type="submit" class="btn btn-primary btn-lg auth-submit" :disabled="submitting">
+          {{ submitting ? 'Creating account…' : 'Create account' }}
         </button>
       </form>
 
-      <p style="text-align:center;margin-top:24px;font-size:14px;color:var(--text-muted);">
+      <p class="auth-foot">
         Already have an account?
-        <router-link to="/login" style="color:var(--primary);font-weight:600;">Sign in</router-link>
+        <router-link to="/login" class="auth-link">Sign in</router-link>
       </p>
     </div>
   </div>
 </template>
 
 <style scoped>
-.role-cards {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 24px;
-}
-.role-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 18px 12px;
+.auth-page {
+  min-height: calc(100vh - var(--nav-h, 64px));
+  display: flex; align-items: center; justify-content: center;
+  padding: 48px 20px;
   background: var(--bg);
-  border: 2px solid var(--border);
-  border-radius: var(--radius-md);
+}
+.auth-card {
+  width: 100%; max-width: 460px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 44px 40px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+}
+.auth-head { text-align: center; margin-bottom: 28px; }
+.auth-brand {
+  font-size: 30px; font-weight: 800; letter-spacing: -0.5px;
+  background: linear-gradient(135deg, oklch(0.63 0.20 22), oklch(0.72 0.18 40));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; color: transparent;
+  margin-bottom: 18px;
+}
+.auth-title { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 6px; color: var(--text); }
+.auth-sub   { font-size: 14px; color: var(--text-muted); }
+
+.role-toggle {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
+  background: var(--surface-2);
+  border-radius: 999px;
+  padding: 4px;
+  margin-bottom: 28px;
+}
+.role-pill {
+  border: none; background: transparent;
+  padding: 12px 16px;
+  border-radius: 999px;
+  font-size: 14px; font-weight: 700;
+  color: var(--text-muted);
   cursor: pointer;
   transition: var(--transition);
-  text-align: center;
 }
-.role-card:hover { border-color: var(--primary-light); background: rgba(79,70,229,0.04); }
-.role-card.active { border-color: var(--primary); background: rgba(79,70,229,0.07); }
-.role-emoji { font-size: 24px; }
-.role-label { font-size: 13px; font-weight: 700; color: var(--text); }
-.role-desc  { font-size: 11px; color: var(--text-muted); }
+.role-pill.active {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 4px 12px rgba(232,97,74,0.32);
+}
+
+.auth-submit { width: 100%; margin-top: 8px; }
+.auth-foot   { text-align: center; margin-top: 22px; font-size: 14px; color: var(--text-muted); }
+.auth-link   { color: var(--primary); font-weight: 700; }
 </style>
