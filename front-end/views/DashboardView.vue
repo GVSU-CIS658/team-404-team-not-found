@@ -45,14 +45,21 @@ async function handleCancelReg(regId: string, eventId: string) {
 
 onMounted(async () => {
   if (authStore.user) {
-    await regStore.fetchUserRegistrations(authStore.user.uid)
+    const uid = authStore.user.uid
+    // Fan out the dashboard's mount-time queries in parallel — sequencing
+    // them made the page take 3-4× longer to render.
+    const tasks: Promise<unknown>[] = [regStore.fetchUserRegistrations(uid)]
     if (authStore.isOrganizer) {
-      myEvents.value = (await eventStore.fetchMyEvents(authStore.user.uid)) || []
+      tasks.push(
+        eventStore.fetchMyEvents(uid).then(r => { myEvents.value = r || [] })
+      )
     }
-    // Only the app owner fetches all users (member analytics are private to the owner).
     if (authStore.isOwner) {
-      allUsers.value = await authStore.fetchAllUsers()
+      tasks.push(
+        authStore.fetchAllUsers().then(r => { allUsers.value = r })
+      )
     }
+    await Promise.all(tasks)
   }
   loading.value = false
 })

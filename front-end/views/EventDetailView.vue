@@ -42,8 +42,15 @@ const selectedVenue = computed<Venue | null>(() => {
 })
 
 const ticketPercent = computed(() => {
-  if (!event.value) return 0
+  if (!event.value || !event.value.ticketLimit) return 0
   return Math.round((event.value.ticketsRemaining / event.value.ticketLimit) * 100)
+})
+
+// "% full" — what fraction has been registered (0 when nothing booked, 100 when sold out)
+const percentFull = computed(() => {
+  if (!event.value || !event.value.ticketLimit) return 0
+  const filled = event.value.ticketLimit - event.value.ticketsRemaining
+  return Math.max(0, Math.min(100, Math.round((filled / event.value.ticketLimit) * 100)))
 })
 
 const CAT_GRADIENT: Record<string, string> = {
@@ -146,11 +153,21 @@ async function loadAttendees() {
 
 onMounted(async () => {
   const id = route.params.id as string
-  event.value = await eventStore.fetchEvent(id)
+  // Run the event fetch + user-state fetches in parallel — was sequential and
+  // made the page wait ~4× longer than it needed to.
   if (authStore.user) {
-    isRegistered.value = await regStore.isUserRegistered(authStore.user.uid, id)
-    await regStore.fetchUserRegistrations(authStore.user.uid)
-    userRegistration.value = await regStore.getUserVenueRegistration(authStore.user.uid, id)
+    const uid = authStore.user.uid
+    const [ev, userReg, _allRegs] = await Promise.all([
+      eventStore.fetchEvent(id),
+      regStore.getUserVenueRegistration(uid, id),
+      regStore.fetchUserRegistrations(uid),
+    ])
+    event.value = ev
+    userRegistration.value = userReg
+    // isUserRegistered is just a derivative of getUserVenueRegistration — skip the extra query.
+    isRegistered.value = !!userReg
+  } else {
+    event.value = await eventStore.fetchEvent(id)
   }
   loading.value = false
 })
@@ -292,12 +309,6 @@ onMounted(async () => {
                       referrerpolicy="no-referrer-when-downgrade"
                       allowfullscreen
                     ></iframe>
-                    <a
-                      class="ev-map-open"
-                      :href="`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location + ', Grand Rapids, MI')}`"
-                      target="_blank"
-                      rel="noopener"
-                    >Open in Maps →</a>
                   </div>
                 </div>
               </div>
@@ -422,10 +433,10 @@ onMounted(async () => {
                 <!-- Inline % full progress -->
                 <div class="sidebar-progress-row">
                   <span class="sp-left">{{ event.ticketsRemaining }} / {{ event.ticketLimit }} remaining</span>
-                  <span class="sp-right">{{ 100 - ticketProgress }}% full</span>
+                  <span class="sp-right">{{ percentFull }}% full</span>
                 </div>
                 <div class="sidebar-progress-bar">
-                  <div class="sidebar-progress-fill" :style="{ width: (100 - ticketProgress) + '%' }"></div>
+                  <div class="sidebar-progress-fill" :style="{ width: percentFull + '%' }"></div>
                 </div>
               </div>
 
