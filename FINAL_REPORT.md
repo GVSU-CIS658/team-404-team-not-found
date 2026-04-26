@@ -244,6 +244,3 @@ All five Cloud Functions are deployed and visible in the Firebase Console under 
 
 Schedulr meets each of the project's core architectural requirements: a modern Vue 3 frontend, a Firebase Cloud Functions backend service layer that mediates every write, a Cloud Firestore database with three well-modeled collections, role-aware authentication and authorization, and a public Firebase Hosting deployment. The non-functional considerations of security, performance, and reliability are addressed both at the design level and in observable code patterns. The team is now prepared for the in-class live demonstration on April 27.
 
----
-
-*AI assistance disclosure: portions of this codebase, including refactors, debugging support, and prose drafting for this report, were developed with the assistance of an AI coding assistant (Claude) under our supervision and direction.*
