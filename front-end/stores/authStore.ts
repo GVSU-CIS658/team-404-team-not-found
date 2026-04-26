@@ -6,8 +6,9 @@ import {
   signOut,
   onAuthStateChanged,
   updateProfile,
+  sendPasswordResetEmail,
 } from 'firebase/auth'
-import { doc, setDoc, getDoc, collection, getDocs, orderBy, query, updateDoc } from 'firebase/firestore'
+import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore'
 import { auth, db } from '../firebase'
 import type { User } from '../types'
 
@@ -18,9 +19,6 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed(() => !!user.value)
   const isOrganizer = computed(() => user.value?.role === 'organizer')
-  // Owner = Rajeshwari (the app owner). Only she sees app-wide member stats.
-  const OWNER_EMAIL = 'galugur@mail.gvsu.edu'
-  const isOwner = computed(() => user.value?.email?.toLowerCase() === OWNER_EMAIL)
 
   async function init() {
     return new Promise<void>((resolve) => {
@@ -83,10 +81,10 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null
   }
 
-  async function fetchAllUsers(): Promise<User[]> {
-    const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'))
-    const snap = await getDocs(q)
-    return snap.docs.map(d => ({ uid: d.id, ...d.data() } as User))
+  // Trigger Firebase's hosted password-reset email flow. The user clicks the
+  // link in the email and chooses a new password on Firebase's reset page.
+  async function resetPassword(email: string) {
+    await sendPasswordResetEmail(auth, email)
   }
 
   // Promote the currently signed-in attendee to an organizer in place — no
@@ -99,5 +97,5 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = { ...user.value, role: 'organizer' }
   }
 
-  return { user, loading, error, isAuthenticated, isOrganizer, isOwner, init, signup, login, logout, fetchAllUsers, becomeOrganizer }
+  return { user, loading, error, isAuthenticated, isOrganizer, init, signup, login, logout, becomeOrganizer, resetPassword }
 })

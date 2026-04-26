@@ -196,6 +196,18 @@ onMounted(async () => {
     event.value = await eventStore.fetchEvent(id)
   }
   loading.value = false
+
+  // If the current user is the event creator, auto-load the attendee list so
+  // the organizer sees who has registered without needing an extra click.
+  if (isOwner.value && event.value?.id) {
+    showAttendees.value = true
+    loadingAttendees.value = true
+    try {
+      eventRegistrations.value = await regStore.fetchEventRegistrations(event.value.id)
+    } finally {
+      loadingAttendees.value = false
+    }
+  }
 })
 </script>
 

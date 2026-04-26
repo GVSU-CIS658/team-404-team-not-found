@@ -24,6 +24,37 @@ async function handleLogin() {
     submitting.value = false
   }
 }
+
+// ─── Forgot-password flow ─────────────────────────────────────
+const showReset = ref(false)
+const resetEmail = ref('')
+const resetSubmitting = ref(false)
+const resetMessage = ref('')
+const resetError = ref('')
+
+function openReset() {
+  resetEmail.value = email.value
+  resetMessage.value = ''
+  resetError.value = ''
+  showReset.value = true
+}
+
+async function handleReset() {
+  resetMessage.value = ''
+  resetError.value = ''
+  if (!resetEmail.value) { resetError.value = 'Please enter your email.'; return }
+  resetSubmitting.value = true
+  try {
+    await authStore.resetPassword(resetEmail.value)
+    resetMessage.value = `Reset email sent to ${resetEmail.value}. Check your inbox (and spam folder) for the link.`
+  } catch (e: any) {
+    // Firebase returns auth/user-not-found for unknown emails; for security we
+    // show the same generic success-style hint in either case.
+    resetMessage.value = `If an account exists for ${resetEmail.value}, a reset email was sent. Check your inbox (and spam folder).`
+  } finally {
+    resetSubmitting.value = false
+  }
+}
 </script>
 
 <template>
@@ -52,9 +83,36 @@ async function handleLogin() {
       </form>
 
       <p class="auth-foot">
+        <button type="button" class="auth-link auth-link-btn" @click="openReset">Forgot password?</button>
+      </p>
+      <p class="auth-foot" style="margin-top:8px;">
         Don't have an account?
         <router-link to="/signup" class="auth-link">Sign up</router-link>
       </p>
+    </div>
+
+    <!-- Forgot-password modal -->
+    <div v-if="showReset" class="reset-overlay" @click.self="showReset = false">
+      <div class="reset-card">
+        <h2 class="reset-title">Reset your password</h2>
+        <p class="reset-sub">Enter your email and we'll send you a link to choose a new one.</p>
+
+        <form @submit.prevent="handleReset">
+          <div class="form-group">
+            <label>Email address</label>
+            <input v-model="resetEmail" type="email" placeholder="you@example.com" required autocomplete="email" />
+          </div>
+          <div v-if="resetMessage" class="alert alert-success" style="margin-bottom:12px;">{{ resetMessage }}</div>
+          <div v-if="resetError"   class="alert alert-error"   style="margin-bottom:12px;">{{ resetError }}</div>
+
+          <div class="reset-actions">
+            <button type="button" class="btn btn-secondary" @click="showReset = false">Close</button>
+            <button type="submit" class="btn btn-primary" :disabled="resetSubmitting">
+              {{ resetSubmitting ? 'Sending…' : 'Send reset email' }}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 </template>
@@ -88,4 +146,26 @@ async function handleLogin() {
 .auth-submit { width: 100%; margin-top: 8px; }
 .auth-foot   { text-align: center; margin-top: 22px; font-size: 14px; color: var(--text-muted); }
 .auth-link   { color: var(--primary); font-weight: 700; }
+.auth-link-btn { background: none; border: none; cursor: pointer; padding: 0; font: inherit; }
+
+/* Reset-password modal */
+.reset-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+.reset-card {
+  width: 100%; max-width: 440px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 32px 32px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+}
+.reset-title { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 6px; letter-spacing: -0.3px; }
+.reset-sub   { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; }
+.reset-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
 </style>

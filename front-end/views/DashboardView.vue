@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/authStore'
 import { useEventStore } from '../stores/eventStore'
 import { useRegistrationStore } from '../stores/registrationStore'
-import type { Event, Registration, User, Venue } from '../types'
+import type { Event, Registration, Venue } from '../types'
 import { v4 as uuidv4 } from 'uuid'
 
 const authStore = useAuthStore()
@@ -14,11 +14,9 @@ const route = useRoute()
 const router = useRouter()
 
 const myEvents = ref<Event[]>([])
-const allUsers = ref<User[]>([])
 const eventRegs = ref<Record<string, Registration[]>>({})
 const expandedEvent = ref<string | null>(null)
 const loadingRegs = ref<Record<string, boolean>>({})
-const activeTab = ref<'registrations' | 'myEvents' | 'attendees' | 'members'>('registrations')
 const loading = ref(true)
 
 // Inline create-event form state
@@ -195,9 +193,6 @@ onMounted(async () => {
     const tasks: Promise<unknown>[] = [regStore.fetchUserRegistrations(uid)]
     if (authStore.isOrganizer) {
       tasks.push(eventStore.fetchMyEvents(uid).then(r => { myEvents.value = r || [] }))
-    }
-    if (authStore.isOwner) {
-      tasks.push(authStore.fetchAllUsers().then(r => { allUsers.value = r }))
     }
     await Promise.all(tasks)
   }
@@ -489,42 +484,6 @@ watch(() => route.query.new, v => { if (v === '1') showCreateForm.value = true }
           </div>
         </div>
 
-        <!-- Owner-only members table -->
-        <div v-if="authStore.isOwner" class="extra-section">
-          <div class="org-section-head">
-            <h2 class="org-section-title">All App Members <span class="owner-tag">Owner only</span></h2>
-            <span class="badge badge-primary">{{ allUsers.length }} total</span>
-          </div>
-          <table class="attendee-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Joined</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(u, i) in allUsers" :key="u.uid">
-                <td class="td-num">{{ i + 1 }}</td>
-                <td>
-                  <div style="display:flex;align-items:center;gap:10px;">
-                    <div class="small-avatar">{{ u.name?.[0]?.toUpperCase() || '?' }}</div>
-                    <span class="td-name">{{ u.name }}</span>
-                  </div>
-                </td>
-                <td class="td-muted">{{ u.email }}</td>
-                <td>
-                  <span class="badge" :class="u.role === 'organizer' ? 'badge-warning' : 'badge-primary'">
-                    {{ u.role === 'organizer' ? 'Organizer' : 'Attendee' }}
-                  </span>
-                </td>
-                <td class="td-muted">{{ u.createdAt ? fmt(u.createdAt) : '—' }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
       </template>
 
       <div v-if="loading" class="loading-wrap"><div class="spinner"></div></div>
