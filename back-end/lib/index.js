@@ -11,4 +11,4 @@ var registerForEvent_1 = require("./registrations/registerForEvent");
 Object.defineProperty(exports, "registerForEvent", { enumerable: true, get: function () { return registerForEvent_1.registerForEvent; } });
 var cancelRegistration_1 = require("./registrations/cancelRegistration");
 Object.defineProperty(exports, "cancelRegistration", { enumerable: true, get: function () { return cancelRegistration_1.cancelRegistration; } });
-//# sourceMappingURL=index.js.map
+//# sourceMappingURL=index.js.map 
