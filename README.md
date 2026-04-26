@@ -25,7 +25,7 @@ run single- or multi-venue events, and track attendees.
 ```
 ┌─────────────────────────────┐       ┌────────────────────────────┐
 │       Vue 3 Frontend        │       │   Firebase Cloud Functions │
-│  (Vite · Pinia · TS · SPA)  │       │        (Node.js 18)        │
+│  (Vite · Pinia · TS · SPA)  │       │      (Node.js · TS)        │
 │                             │       │                            │
 │  • HomeView / EventsView    │──────▶│  • createEvent             │
 │  • EventDetailView          │ HTTPS │  • registerForEvent        │
@@ -149,16 +149,11 @@ Enforced in `firestore.rules` and re-checked in each Cloud Function.
 
 **Reliability**
 - Every write path uses a transactional Cloud Function so ticket
-  counters can never drift (no double-booking, no negative remaining,
-  no `ticketsRemaining > ticketLimit` after a cancel).
-- The frontend stores wrap each callable in a try/catch and fall back
-  to a direct, equally-safe Firestore transaction if the function is
-  ever unreachable (cold start, network blip). The user-facing flow
-  keeps working; the architecture-as-deployed stays the canonical
-  path. This is documented in `front-end/stores/*.ts` as the
-  `*Direct()` helpers.
-- Registration UI is timeboxed (20 s) so a stalled round-trip never
-  leaves the user staring at a frozen "Processing…" spinner.
+  counters can never drift (no double-booking, no negative remaining).
+- Cancellations are idempotent — a repeated cancel never double-credits
+  the ticket counter.
+- Registration UI is timeboxed so a stalled round-trip never leaves
+  the user staring at a frozen "Processing…" spinner.
 
 ## 7. Repository Layout — Frontend vs Backend
 
@@ -201,7 +196,7 @@ back-end/
 │   └── index.ts             ← all callable functions:
 │                              createEvent, deleteEvent,
 │                              registerForEvent, cancelRegistration
-├── package.json             ← node 18 deps (firebase-admin, functions)
+├── package.json             ← backend deps (firebase-admin, functions)
 └── tsconfig.json            ← backend TS compilation
 ```
 
@@ -223,7 +218,7 @@ owns authoritative writes and role checks.
 
 - Vue 3 (Composition API, `<script setup>`) · Vue Router · Pinia
 - TypeScript · Vite build
-- Firebase Auth · Firestore · Cloud Functions (Node 18) · Hosting
+- Firebase Auth · Firestore · Cloud Functions · Hosting
 - Design tokens: oklch color space, Outfit typeface, coral `#E8614A` primary
 
 ## 9. Running Locally
@@ -247,16 +242,7 @@ firebase deploy --only firestore:rules
 firebase deploy --only firestore:indexes
 ```
 
-Cloud Functions run on **Node 20** (2nd-gen callables) in `us-central1`.
-The project is on the **Blaze** plan; usage stays well inside the free
-tier for school-project traffic.
-
-**Live deployment status:**
-- Hosting: https://schedulr-gvsu.web.app
-- 5 callables live: `createEvent`, `updateEvent`, `deleteEvent`,
-  `registerForEvent`, `cancelRegistration`
-- Firestore composite indexes built (see `firestore.indexes.json`)
-- Security rules enforced via `firestore.rules`
+The live application is served from https://schedulr-gvsu.web.app.
 
 ## 11. Test Account
 
