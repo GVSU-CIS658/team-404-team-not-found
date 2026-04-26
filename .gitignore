@@ -137,3 +137,7 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Local Word/PDF report drafts (kept out of git; submit to Canvas directly)
+*.docx
+*.pdf
