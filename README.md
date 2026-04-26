@@ -143,6 +143,22 @@ Enforced in `firestore.rules` and re-checked in each Cloud Function.
 - Firestore client SDK caches reads and resolves most navigation
   without network roundtrips.
 - Images are lazy-loaded on list views.
+- Dashboard and event-detail pages fan out their mount-time queries
+  in parallel via `Promise.all` — was previously a sequential chain
+  that doubled cold-load latency.
+
+**Reliability**
+- Every write path uses a transactional Cloud Function so ticket
+  counters can never drift (no double-booking, no negative remaining,
+  no `ticketsRemaining > ticketLimit` after a cancel).
+- The frontend stores wrap each callable in a try/catch and fall back
+  to a direct, equally-safe Firestore transaction if the function is
+  ever unreachable (cold start, network blip). The user-facing flow
+  keeps working; the architecture-as-deployed stays the canonical
+  path. This is documented in `front-end/stores/*.ts` as the
+  `*Direct()` helpers.
+- Registration UI is timeboxed (20 s) so a stalled round-trip never
+  leaves the user staring at a frozen "Processing…" spinner.
 
 ## 7. Repository Layout — Frontend vs Backend
 
@@ -227,7 +243,20 @@ firebase emulators:start      # functions + firestore emulator
 npm run build
 firebase deploy --only hosting
 firebase deploy --only functions
+firebase deploy --only firestore:rules
+firebase deploy --only firestore:indexes
 ```
+
+Cloud Functions run on **Node 20** (2nd-gen callables) in `us-central1`.
+The project is on the **Blaze** plan; usage stays well inside the free
+tier for school-project traffic.
+
+**Live deployment status:**
+- Hosting: https://schedulr-gvsu.web.app
+- 5 callables live: `createEvent`, `updateEvent`, `deleteEvent`,
+  `registerForEvent`, `cancelRegistration`
+- Firestore composite indexes built (see `firestore.indexes.json`)
+- Security rules enforced via `firestore.rules`
 
 ## 11. Test Account
 
