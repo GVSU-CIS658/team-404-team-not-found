@@ -4,7 +4,7 @@ import { requireAuth, requireOrganizer } from "../shared/auth";
 
 interface VenueIn {
   id: string;
-  name: string;
+  name: string; 
   address: string;
   dateTime: string | number | Date;
   ticketLimit: number;
