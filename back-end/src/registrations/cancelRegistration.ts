@@ -2,7 +2,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { db } from "../shared/admin";
 import { requireAuth } from "../shared/auth";
 
-export const cancelRegistration = onCall(async (request) => {
+export const cancelRegistration = onCall(async (request) => { 
   const auth = requireAuth(request.auth);
 
   const { registrationId } = request.data;
