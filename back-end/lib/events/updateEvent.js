@@ -12,7 +12,7 @@ const ALLOWED_FIELDS = new Set([
     "ticketLimit",
     "category",
     "flyerURL",
-    "venues",
+    "venues", 
 ]);
 exports.updateEvent = (0, https_1.onCall)(async (request) => {
     var _a, _b, _c, _d;
