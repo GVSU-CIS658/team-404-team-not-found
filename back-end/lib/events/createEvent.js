@@ -44,7 +44,7 @@ exports.createEvent = (0, https_1.onCall)(async (request) => {
         createdAt: admin_1.admin.firestore.FieldValue.serverTimestamp(),
     };
     if (venues) {
-        event.venues = venues.map((v) => ({
+        event.venues = venues.map((v) => ({ 
             id: v.id,
             name: v.name,
             address: v.address,
