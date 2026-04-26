@@ -1,4 +1,4 @@
-"use strict";
+"use strict"; 
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.registerForEvent = void 0;
 const https_1 = require("firebase-functions/v2/https");
