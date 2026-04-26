@@ -1,4 +1,4 @@
-import * as functions from "firebase-functions";
+import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { admin, db } from "../shared/admin";
 import { requireAuth, requireOrganizer } from "../shared/auth";
 
@@ -11,13 +11,13 @@ interface VenueIn {
   ticketsRemaining?: number;
 }
 
-export const createEvent = functions.https.onCall(async (request) => {
+export const createEvent = onCall(async (request) => {
   const auth = requireAuth(request.auth);
   const userDoc = await requireOrganizer(auth.uid);
 
   const data = request.data;
   if (!data.title || !data.description) {
-    throw new functions.https.HttpsError("invalid-argument", "Missing required fields");
+    throw new HttpsError("invalid-argument", "Missing required fields");
   }
 
   const venues: VenueIn[] | undefined = Array.isArray(data.venues) && data.venues.length > 0
@@ -31,7 +31,7 @@ export const createEvent = functions.https.onCall(async (request) => {
     : Number(data.ticketLimit);
 
   if (!totalLimit || totalLimit < 1 || totalLimit > 100000) {
-    throw new functions.https.HttpsError(
+    throw new HttpsError(
       "invalid-argument",
       "Total ticket capacity must be between 1 and 100000",
     );
@@ -43,7 +43,7 @@ export const createEvent = functions.https.onCall(async (request) => {
   const primaryLocation = venues ? venues[0].address : data.location;
 
   if (!primaryLocation) {
-    throw new functions.https.HttpsError("invalid-argument", "Location required");
+    throw new HttpsError("invalid-argument", "Location required");
   }
 
   const event: Record<string, unknown> = {

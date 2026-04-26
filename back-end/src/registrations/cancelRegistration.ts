@@ -1,13 +1,13 @@
-import * as functions from "firebase-functions";
+import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { db } from "../shared/admin";
 import { requireAuth } from "../shared/auth";
 
-export const cancelRegistration = functions.https.onCall(async (request) => {
+export const cancelRegistration = onCall(async (request) => {
   const auth = requireAuth(request.auth);
 
   const { registrationId } = request.data;
   if (!registrationId) {
-    throw new functions.https.HttpsError("invalid-argument", "Registration ID required");
+    throw new HttpsError("invalid-argument", "Registration ID required");
   }
 
   const regRef = db.collection("registrations").doc(registrationId);
@@ -15,11 +15,11 @@ export const cancelRegistration = functions.https.onCall(async (request) => {
   await db.runTransaction(async (transaction) => {
     const regSnap = await transaction.get(regRef);
     if (!regSnap.exists) {
-      throw new functions.https.HttpsError("not-found", "Registration not found");
+      throw new HttpsError("not-found", "Registration not found");
     }
     const regData = regSnap.data()!;
     if (regData.userId !== auth.uid) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         "permission-denied",
         "Can only cancel your own registration",
       );

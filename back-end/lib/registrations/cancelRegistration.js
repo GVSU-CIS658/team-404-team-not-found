@@ -1,25 +1,25 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.cancelRegistration = void 0;
-const functions = require("firebase-functions");
+const https_1 = require("firebase-functions/v2/https");
 const admin_1 = require("../shared/admin");
 const auth_1 = require("../shared/auth");
-exports.cancelRegistration = functions.https.onCall(async (request) => {
+exports.cancelRegistration = (0, https_1.onCall)(async (request) => {
     const auth = (0, auth_1.requireAuth)(request.auth);
     const { registrationId } = request.data;
     if (!registrationId) {
-        throw new functions.https.HttpsError("invalid-argument", "Registration ID required");
+        throw new https_1.HttpsError("invalid-argument", "Registration ID required");
     }
     const regRef = admin_1.db.collection("registrations").doc(registrationId);
     await admin_1.db.runTransaction(async (transaction) => {
         var _a, _b;
         const regSnap = await transaction.get(regRef);
         if (!regSnap.exists) {
-            throw new functions.https.HttpsError("not-found", "Registration not found");
+            throw new https_1.HttpsError("not-found", "Registration not found");
         }
         const regData = regSnap.data();
         if (regData.userId !== auth.uid) {
-            throw new functions.https.HttpsError("permission-denied", "Can only cancel your own registration");
+            throw new https_1.HttpsError("permission-denied", "Can only cancel your own registration");
         }
         // Idempotent: if already cancelled, nothing to do (and don't double-credit).
         if (regData.status === "cancelled")

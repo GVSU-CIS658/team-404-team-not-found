@@ -1,4 +1,4 @@
-import * as functions from "firebase-functions";
+import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { admin, db } from "../shared/admin";
 import { requireAuth } from "../shared/auth";
 
@@ -22,21 +22,21 @@ const ALLOWED_FIELDS = new Set([
   "venues",
 ]);
 
-export const updateEvent = functions.https.onCall(async (request) => {
+export const updateEvent = onCall(async (request) => {
   const auth = requireAuth(request.auth);
 
   const { eventId, updates } = request.data || {};
   if (!eventId || typeof updates !== "object") {
-    throw new functions.https.HttpsError("invalid-argument", "eventId and updates required");
+    throw new HttpsError("invalid-argument", "eventId and updates required");
   }
 
   const eventRef = db.collection("events").doc(eventId);
   const eventSnap = await eventRef.get();
   if (!eventSnap.exists) {
-    throw new functions.https.HttpsError("not-found", "Event not found");
+    throw new HttpsError("not-found", "Event not found");
   }
   if (eventSnap.data()?.createdBy !== auth.uid) {
-    throw new functions.https.HttpsError("permission-denied", "Only the event creator can edit");
+    throw new HttpsError("permission-denied", "Only the event creator can edit");
   }
 
   // Whitelist + normalise the update payload — never trust the client to set

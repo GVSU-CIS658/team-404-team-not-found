@@ -1,16 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createEvent = void 0;
-const functions = require("firebase-functions");
+const https_1 = require("firebase-functions/v2/https");
 const admin_1 = require("../shared/admin");
 const auth_1 = require("../shared/auth");
-exports.createEvent = functions.https.onCall(async (request) => {
+exports.createEvent = (0, https_1.onCall)(async (request) => {
     var _a;
     const auth = (0, auth_1.requireAuth)(request.auth);
     const userDoc = await (0, auth_1.requireOrganizer)(auth.uid);
     const data = request.data;
     if (!data.title || !data.description) {
-        throw new functions.https.HttpsError("invalid-argument", "Missing required fields");
+        throw new https_1.HttpsError("invalid-argument", "Missing required fields");
     }
     const venues = Array.isArray(data.venues) && data.venues.length > 0
         ? data.venues
@@ -21,14 +21,14 @@ exports.createEvent = functions.https.onCall(async (request) => {
         ? venues.reduce((sum, v) => sum + Number(v.ticketLimit || 0), 0)
         : Number(data.ticketLimit);
     if (!totalLimit || totalLimit < 1 || totalLimit > 100000) {
-        throw new functions.https.HttpsError("invalid-argument", "Total ticket capacity must be between 1 and 100000");
+        throw new https_1.HttpsError("invalid-argument", "Total ticket capacity must be between 1 and 100000");
     }
     const primaryDate = venues
         ? new Date(venues[0].dateTime)
         : new Date(data.dateTime);
     const primaryLocation = venues ? venues[0].address : data.location;
     if (!primaryLocation) {
-        throw new functions.https.HttpsError("invalid-argument", "Location required");
+        throw new https_1.HttpsError("invalid-argument", "Location required");
     }
     const event = {
         title: data.title,

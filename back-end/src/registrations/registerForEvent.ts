@@ -1,18 +1,18 @@
-import * as functions from "firebase-functions";
+import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { admin, db } from "../shared/admin";
 import { requireAuth } from "../shared/auth";
 
-export const registerForEvent = functions.https.onCall(async (request) => {
+export const registerForEvent = onCall(async (request) => {
   const auth = requireAuth(request.auth);
 
   const { eventId, venueId, venueName, venueAddress } = request.data;
   if (!eventId) {
-    throw new functions.https.HttpsError("invalid-argument", "Event ID required");
+    throw new HttpsError("invalid-argument", "Event ID required");
   }
 
   const userDoc = await db.collection("users").doc(auth.uid).get();
   if (!userDoc.exists) {
-    throw new functions.https.HttpsError("not-found", "User not found");
+    throw new HttpsError("not-found", "User not found");
   }
 
   // Note: duplicate registrations are allowed — each call books one more ticket
@@ -23,7 +23,7 @@ export const registerForEvent = functions.https.onCall(async (request) => {
     const eventSnap = await transaction.get(eventRef);
 
     if (!eventSnap.exists) {
-      throw new functions.https.HttpsError("not-found", "Event not found");
+      throw new HttpsError("not-found", "Event not found");
     }
 
     const eventData = eventSnap.data()!;
@@ -34,10 +34,10 @@ export const registerForEvent = functions.https.onCall(async (request) => {
       const venues = [...eventData.venues];
       const idx = venues.findIndex((v: { id: string }) => v.id === venueId);
       if (idx === -1) {
-        throw new functions.https.HttpsError("not-found", "Venue not found on event");
+        throw new HttpsError("not-found", "Venue not found on event");
       }
       if (venues[idx].ticketsRemaining <= 0) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           "resource-exhausted",
           "No tickets left for this venue",
         );
@@ -54,7 +54,7 @@ export const registerForEvent = functions.https.onCall(async (request) => {
     } else {
       // Single-venue event
       if (eventData.ticketsRemaining <= 0) {
-        throw new functions.https.HttpsError("resource-exhausted", "No tickets remaining");
+        throw new HttpsError("resource-exhausted", "No tickets remaining");
       }
       transaction.update(eventRef, {
         ticketsRemaining: eventData.ticketsRemaining - 1,

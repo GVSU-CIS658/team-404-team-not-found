@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateEvent = void 0;
-const functions = require("firebase-functions");
+const https_1 = require("firebase-functions/v2/https");
 const admin_1 = require("../shared/admin");
 const auth_1 = require("../shared/auth");
 const ALLOWED_FIELDS = new Set([
@@ -14,20 +14,20 @@ const ALLOWED_FIELDS = new Set([
     "flyerURL",
     "venues",
 ]);
-exports.updateEvent = functions.https.onCall(async (request) => {
+exports.updateEvent = (0, https_1.onCall)(async (request) => {
     var _a, _b, _c, _d;
     const auth = (0, auth_1.requireAuth)(request.auth);
     const { eventId, updates } = request.data || {};
     if (!eventId || typeof updates !== "object") {
-        throw new functions.https.HttpsError("invalid-argument", "eventId and updates required");
+        throw new https_1.HttpsError("invalid-argument", "eventId and updates required");
     }
     const eventRef = admin_1.db.collection("events").doc(eventId);
     const eventSnap = await eventRef.get();
     if (!eventSnap.exists) {
-        throw new functions.https.HttpsError("not-found", "Event not found");
+        throw new https_1.HttpsError("not-found", "Event not found");
     }
     if (((_a = eventSnap.data()) === null || _a === void 0 ? void 0 : _a.createdBy) !== auth.uid) {
-        throw new functions.https.HttpsError("permission-denied", "Only the event creator can edit");
+        throw new https_1.HttpsError("permission-denied", "Only the event creator can edit");
     }
     // Whitelist + normalise the update payload — never trust the client to set
     // createdBy / createdAt / ticketsRemaining directly outside of registrations.

@@ -1,18 +1,18 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.registerForEvent = void 0;
-const functions = require("firebase-functions");
+const https_1 = require("firebase-functions/v2/https");
 const admin_1 = require("../shared/admin");
 const auth_1 = require("../shared/auth");
-exports.registerForEvent = functions.https.onCall(async (request) => {
+exports.registerForEvent = (0, https_1.onCall)(async (request) => {
     const auth = (0, auth_1.requireAuth)(request.auth);
     const { eventId, venueId, venueName, venueAddress } = request.data;
     if (!eventId) {
-        throw new functions.https.HttpsError("invalid-argument", "Event ID required");
+        throw new https_1.HttpsError("invalid-argument", "Event ID required");
     }
     const userDoc = await admin_1.db.collection("users").doc(auth.uid).get();
     if (!userDoc.exists) {
-        throw new functions.https.HttpsError("not-found", "User not found");
+        throw new https_1.HttpsError("not-found", "User not found");
     }
     // Note: duplicate registrations are allowed — each call books one more ticket
     // for the same user/event so families and groups can register together.
@@ -21,7 +21,7 @@ exports.registerForEvent = functions.https.onCall(async (request) => {
         const eventRef = admin_1.db.collection("events").doc(eventId);
         const eventSnap = await transaction.get(eventRef);
         if (!eventSnap.exists) {
-            throw new functions.https.HttpsError("not-found", "Event not found");
+            throw new https_1.HttpsError("not-found", "Event not found");
         }
         const eventData = eventSnap.data();
         if (venueId && Array.isArray(eventData.venues)) {
@@ -30,10 +30,10 @@ exports.registerForEvent = functions.https.onCall(async (request) => {
             const venues = [...eventData.venues];
             const idx = venues.findIndex((v) => v.id === venueId);
             if (idx === -1) {
-                throw new functions.https.HttpsError("not-found", "Venue not found on event");
+                throw new https_1.HttpsError("not-found", "Venue not found on event");
             }
             if (venues[idx].ticketsRemaining <= 0) {
-                throw new functions.https.HttpsError("resource-exhausted", "No tickets left for this venue");
+                throw new https_1.HttpsError("resource-exhausted", "No tickets left for this venue");
             }
             venues[idx] = {
                 ...venues[idx],
@@ -45,7 +45,7 @@ exports.registerForEvent = functions.https.onCall(async (request) => {
         else {
             // Single-venue event
             if (eventData.ticketsRemaining <= 0) {
-                throw new functions.https.HttpsError("resource-exhausted", "No tickets remaining");
+                throw new https_1.HttpsError("resource-exhausted", "No tickets remaining");
             }
             transaction.update(eventRef, {
                 ticketsRemaining: eventData.ticketsRemaining - 1,
