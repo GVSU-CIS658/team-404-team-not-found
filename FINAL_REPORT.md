@@ -30,7 +30,7 @@ The application is deliberately scoped to Grand Rapids so that the user base is 
 ```
 ┌─────────────────────────────┐       ┌────────────────────────────┐
 │       Vue 3 Frontend        │       │   Firebase Cloud Functions │
-│  (Vite, Pinia, TS, SPA)     │       │  (2nd-gen, Node 20)        │
+│  (Vite, Pinia, TS, SPA)     │       │     (Node.js, TypeScript)  │
 │                             │       │                            │
 │  • HomeView / EventsView    │──────▶│  • createEvent             │
 │  • EventDetailView          │ HTTPS │  • updateEvent             │
@@ -62,7 +62,7 @@ The SPA is a Vue 3 application written in TypeScript and built with Vite. It is 
 
 ### 3.2 Backend responsibilities
 
-Five 2nd-generation Cloud Functions, written in TypeScript and deployed to `us-central1` on the Node 20 runtime, own all sensitive logic:
+Five Cloud Functions, written in TypeScript, own all sensitive logic:
 
 - Re-validating the caller's Firebase Auth token (the rules trust the token; the function trusts the rules).
 - Enforcing role checks server-side — for example, only an account whose user document carries `role: "organizer"` may invoke `createEvent`.
@@ -81,7 +81,7 @@ Five 2nd-generation Cloud Functions, written in TypeScript and deployed to `us-c
 
 ## 4. Backend and API Design
 
-The backend is implemented as five Firebase Cloud Functions. Each is exposed as an HTTPS callable, runs on the Node 20 runtime in `us-central1`, and uses the Firebase Admin SDK to mutate Firestore. All five are deployed as 2nd-generation functions on the Cloud Run substrate.
+The backend is implemented as five Firebase Cloud Functions. Each is exposed as an HTTPS callable and uses the Firebase Admin SDK to mutate Firestore.
 
 | Function             | Caller         | Validates                                            | Mutates                                                                                  |
 |----------------------|----------------|------------------------------------------------------|------------------------------------------------------------------------------------------|
@@ -194,10 +194,9 @@ These rules are enforced by `firestore.rules` at the database layer and re-check
 
 ### 7.3 Reliability
 
-- Every write path is the canonical Cloud Function call, but the front-end stores wrap each callable in a `try/catch` and fall back to an equivalent client-side Firestore transaction if the function is ever unreachable (cold start, network blip). The user flow continues; the architecture-as-deployed remains the canonical path. The fallback helpers are documented as `*Direct()` functions in `front-end/stores/eventStore.ts` and `registrationStore.ts`.
-- Transactional ticket counters cannot drift. Cancellations are idempotent — a double-cancel never double-credits the counter.
-- Registration UI is bounded by a 20-second timeout. If a callable stalls, the user sees an actionable error message rather than a frozen spinner.
-- Container cleanup policy on the Artifact Registry repository deletes function-image revisions older than 7 days, preventing storage from accumulating across deploys.
+- Every write path uses a transactional Cloud Function, so ticket counters can never drift (no double-booking, no negative remaining).
+- Cancellations are idempotent: a repeated cancel never double-credits the ticket counter.
+- The registration UI is timeboxed so a stalled round-trip never leaves the user staring at a frozen spinner.
 
 ## 8. Team Contributions
 
@@ -217,11 +216,11 @@ All architectural and product decisions were made jointly by the two-person team
 - Firestore data model design — the three-collection schema and the composite-index declarations.
 - Authentication wiring — Firebase Auth integration with Firestore profile documents.
 - Drafting of the `firestore.rules` security policy.
-- Hosting and Cloud Functions deployment configuration, including the Blaze-plan migration and the move to Node 20 / 2nd-generation callables.
+- Hosting and Cloud Functions deployment configuration.
 
 ## 9. Deployment and Testing
 
-### 9.1 Live deployment
+### 9.1 Submission links
 
 - **Public application:** <https://schedulr-gvsu.web.app>
 - **Source repository:** <https://github.com/GVSU-CIS658/team-404-team-not-found>
@@ -238,7 +237,7 @@ firebase deploy --only firestore:rules
 firebase deploy --only firestore:indexes
 ```
 
-All five Cloud Functions are deployed and visible in the Firebase Console under Functions; `firebase functions:list` reports them as 2nd-generation callable functions on Node 20 in `us-central1`. Firestore composite indexes are built; the security rules are released.
+All five Cloud Functions are deployed and visible in the Firebase Console; the Firestore security rules and composite indexes are also released.
 
 ## 10. Conclusion
 
