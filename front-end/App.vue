@@ -137,7 +137,7 @@ function initials(name: string) {
         <hr class="footer-divider" />
         <div class="footer-bottom">
           <span>© 2026 Schedulr — Grand Rapids, Michigan</span>
-          <span>Built by 404 Team Not Found &mdash; CIS 658</span>
+          <span>Built by 404 Team Not Found &mdash; CIS 658 Web Architectures (W26)</span>
         </div>
       </div>
     </footer>

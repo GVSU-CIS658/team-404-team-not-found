@@ -1,7 +1,7 @@
 # Schedulr — Grand Rapids Community Events
 ## Final Report — Term Project
 
-*GVSU CIS 658 — Web Application Programming · Winter 2026*
+*CIS 658 Web Architectures (W26)*
 
 **Team 404 Team Not Found:** Rajeshwari Galugu (frontend, calendar) · Sai Nishith Jangili (backend, database, deployment)
 **Submission date:** April 26, 2026

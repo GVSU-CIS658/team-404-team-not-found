@@ -4,7 +4,7 @@
 
 **Live app:** https://schedulr-gvsu.web.app
 **Repository:** https://github.com/GVSU-CIS658/team-404-team-not-found
-**Course:** GVSU CIS 658 — Web Application Programming (Winter 2026)
+**Course:** CIS 658 Web Architectures (W26)
 **Team:** 404 Team Not Found
 - Rajeshwari Galugu — Frontend development and calendar integration
 - Sai Nishith Jangili — Backend development, database design, authentication, and deployment
