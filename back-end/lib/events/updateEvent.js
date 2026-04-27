@@ -29,8 +29,6 @@ exports.updateEvent = (0, https_1.onCall)(async (request) => {
     if (((_a = eventSnap.data()) === null || _a === void 0 ? void 0 : _a.createdBy) !== auth.uid) {
         throw new https_1.HttpsError("permission-denied", "Only the event creator can edit");
     }
-    // Whitelist + normalise the update payload — never trust the client to set
-    // createdBy / createdAt / ticketsRemaining directly outside of registrations.
     const payload = {};
     for (const [k, v] of Object.entries(updates)) {
         if (!ALLOWED_FIELDS.has(k))
@@ -50,7 +48,6 @@ exports.updateEvent = (0, https_1.onCall)(async (request) => {
                     ? venue.ticketsRemaining
                     : Number(venue.ticketLimit),
             }));
-            // Recompute aggregate ticket counts from the venues
             payload.ticketLimit = inVenues.reduce((s, x) => s + Number(x.ticketLimit), 0);
             payload.location = (_c = (_b = inVenues[0]) === null || _b === void 0 ? void 0 : _b.address) !== null && _c !== void 0 ? _c : (_d = eventSnap.data()) === null || _d === void 0 ? void 0 : _d.location;
         }
@@ -61,4 +58,3 @@ exports.updateEvent = (0, https_1.onCall)(async (request) => {
     await eventRef.update(payload);
     return { success: true };
 });
-//# sourceMappingURL=updateEvent.js.map
