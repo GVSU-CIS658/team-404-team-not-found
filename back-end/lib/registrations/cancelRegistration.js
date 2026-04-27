@@ -21,7 +21,6 @@ exports.cancelRegistration = (0, https_1.onCall)(async (request) => {
         if (regData.userId !== auth.uid) {
             throw new https_1.HttpsError("permission-denied", "Can only cancel your own registration");
         }
-        // Idempotent: if already cancelled, nothing to do (and don't double-credit).
         if (regData.status === "cancelled")
             return;
         const eventRef = admin_1.db.collection("events").doc(regData.eventId);
@@ -32,7 +31,6 @@ exports.cancelRegistration = (0, https_1.onCall)(async (request) => {
                 const venues = [...eventData.venues];
                 const idx = venues.findIndex((v) => v.id === regData.venueId);
                 if (idx !== -1) {
-                    // Cap re-increment at the venue's ticketLimit to prevent overflow.
                     const capped = Math.min(venues[idx].ticketsRemaining + 1, venues[idx].ticketLimit);
                     venues[idx] = { ...venues[idx], ticketsRemaining: capped };
                     const totalRemaining = venues.reduce((s, v) => s + v.ticketsRemaining, 0);
@@ -49,4 +47,3 @@ exports.cancelRegistration = (0, https_1.onCall)(async (request) => {
     });
     return { success: true };
 });
-//# sourceMappingURL=cancelRegistration.js.map
