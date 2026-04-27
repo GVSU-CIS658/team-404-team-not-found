@@ -2,19 +2,19 @@
 
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/d7M8Pab7)
 
-**Live app:** https://schedulr-gvsu.web.app
-**Repository:** https://github.com/GVSU-CIS658/team-404-team-not-found
+**App Link:** https://schedulr-gvsu.web.app
+**Repository Link:** https://github.com/GVSU-CIS658/team-404-team-not-found
 **Course:** CIS 658 Web Architectures (W26)
-**Team:** 404 Team Not Found
+**Team Name and Contributions:** 404 Team Not Found
 - Rajeshwari Galugu — Frontend development and calendar integration
 - Sai Nishith Jangili — Backend development, database design, authentication, and deployment
 
 ---
 
-## 1. What It Is
+## 1. What Is It
 
-Schedulr is a full-stack event discovery and management platform focused on
-Grand Rapids, Michigan. Residents can browse community events, register for
+Schedulr is a full-stack event discovery and management platform which focuses on
+Grand Rapids, Michigan. Residents have the options to browse community events, register for
 tickets with real-time availability, view a color-coded month calendar, sync
 events to Google Calendar, and manage their registrations from a personal
 dashboard. Organizers can create events with flyer uploads, set ticket limits,
@@ -44,8 +44,7 @@ run single- or multi-venue events, and track attendees.
         └──────────────────────────────────────────────┘
 ```
 
-**Frontend responsibilities:** routing, UI state, form validation,
-optimistic updates, theme toggle, calendar rendering, image uploads.
+**Frontend responsibilities:** routing, UI state, form validation, light and dark theme toggle, rendering of calender, uploading images.
 
 **Backend responsibilities:** authoritative writes for sensitive
 operations (create/delete events, register/cancel tickets), role checks,
@@ -93,7 +92,7 @@ dateTime          Timestamp
 ticketLimit       number
 ticketsRemaining  number         // decremented transactionally
 category          string
-flyerURL          string         // public or data URI
+flyerURL          string         // public 
 createdBy         string (uid)
 createdByName     string
 createdAt         Timestamp
