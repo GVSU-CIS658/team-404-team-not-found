@@ -31,4 +31,3 @@ exports.deleteEvent = (0, https_1.onCall)(async (request) => {
     await batch.commit();
     return { success: true };
 });
-//# sourceMappingURL=deleteEvent.js.map
