@@ -14,8 +14,6 @@ exports.registerForEvent = (0, https_1.onCall)(async (request) => {
     if (!userDoc.exists) {
         throw new https_1.HttpsError("not-found", "User not found");
     }
-    // Note: duplicate registrations are allowed — each call books one more ticket
-    // for the same user/event so families and groups can register together.
     return admin_1.db.runTransaction(async (transaction) => {
         var _a;
         const eventRef = admin_1.db.collection("events").doc(eventId);
@@ -25,8 +23,6 @@ exports.registerForEvent = (0, https_1.onCall)(async (request) => {
         }
         const eventData = eventSnap.data();
         if (venueId && Array.isArray(eventData.venues)) {
-            // Multi-venue event: decrement the specific venue's remaining count and
-            // also keep the event-level ticketsRemaining in sync as the sum of venues.
             const venues = [...eventData.venues];
             const idx = venues.findIndex((v) => v.id === venueId);
             if (idx === -1) {
@@ -70,4 +66,3 @@ exports.registerForEvent = (0, https_1.onCall)(async (request) => {
         return { registrationId: regRef.id };
     });
 });
-//# sourceMappingURL=registerForEvent.js.map
